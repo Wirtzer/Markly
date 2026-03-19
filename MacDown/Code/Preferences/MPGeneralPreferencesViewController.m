@@ -13,6 +13,7 @@
 @interface MPGeneralPreferencesViewController ()
 @property (weak) IBOutlet NSButton *autoRenderingToggle;
 @property (weak) IBOutlet NSPopUpButton *defaultViewModePopup;
+@property (weak) IBOutlet NSPopUpButton *openedFileViewModePopup;
 @end
 
 
@@ -22,6 +23,7 @@
 {
     [super viewDidLoad];
     [self.defaultViewModePopup selectItemWithTag:self.preferences.defaultViewMode];
+    [self.openedFileViewModePopup selectItemWithTag:self.preferences.openedFileViewMode];
 }
 
 #pragma mark - MASPreferencesViewController
@@ -47,6 +49,11 @@
 - (IBAction)defaultViewModeChanged:(id)sender
 {
     self.preferences.defaultViewMode = self.defaultViewModePopup.selectedTag;
+}
+
+- (IBAction)openedFileViewModeChanged:(id)sender
+{
+    self.preferences.openedFileViewMode = self.openedFileViewModePopup.selectedTag;
 }
 
 - (IBAction)updateWordCounterVisibility:(id)sender

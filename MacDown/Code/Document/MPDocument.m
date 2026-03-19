@@ -30,6 +30,7 @@
 #import "MPMathJaxListener.h"
 #import "WebView+WebViewPrivateHeaders.h"
 #import "MPToolbarController.h"
+#import "MPSidebarController.h"
 #import <JavaScriptCore/JavaScriptCore.h>
 
 static NSString * const kMPDefaultAutosaveName = @"Untitled";
@@ -191,6 +192,7 @@ typedef NS_ENUM(NSUInteger, MPWordCountType) {
 @property (weak) IBOutlet WebView *preview;
 @property (weak) IBOutlet NSPopUpButton *wordCountWidget;
 @property (strong) IBOutlet MPToolbarController *toolbarController;
+@property (strong) MPSidebarController *sidebarController;
 @property (copy, nonatomic) NSString *autosaveName;
 @property (strong) HGMarkdownHighlighter *highlighter;
 @property (strong) MPRenderer *renderer;
@@ -360,6 +362,13 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
 {
     [super windowControllerDidLoadNib:controller];
 
+    // Enable native macOS window tabbing (10.12+)
+    if (@available(macOS 10.12, *))
+    {
+        controller.window.tabbingMode = NSWindowTabbingModeAutomatic;
+        controller.window.tabbingIdentifier = @"ReadDownDocumentWindow";
+    }
+
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 
     // All files use their absolute path to keep their window states.
@@ -449,6 +458,20 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
     wordCountWidget.hidden = !self.preferences.editorShowWordCount;
     wordCountWidget.enabled = NO;
 
+    // Install sidebar (file browser + document outline)
+    self.sidebarController = [[MPSidebarController alloc] initWithContentView:controller.window.contentView];
+    [self.sidebarController installInWindow:controller.window aroundView:self.splitView];
+
+    // Set file browser root to the directory of the opened file
+    if (self.fileURL)
+        [self.sidebarController setRootURL:[self.fileURL URLByDeletingLastPathComponent]];
+
+    // Listen for heading selection from sidebar
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(sidebarDidSelectHeading:)
+                                                 name:@"MPSidebarDidSelectHeading"
+                                               object:self.sidebarController];
+
     // These needs to be queued until after the window is shown, so that editor
     // can have the correct dimention for size-limiting and stuff. See
     // https://github.com/uranusjr/macdown/issues/236
@@ -457,18 +480,33 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
         [self redrawDivider];
         [self reloadFromLoadedString];
 
-        // Apply default view mode preference
-        NSInteger defaultViewMode = self.preferences.defaultViewMode;
-        if (defaultViewMode == 1)
+        // Apply view mode: per-file memory > opened-file preference > default
+        NSInteger viewMode = -1;
+
+        // Check per-file memory first
+        if (self.fileURL && self.preferences.rememberViewModePerFile)
         {
-            // Editor only
+            NSString *filePath = self.fileURL.absoluteString;
+            NSDictionary *perFileViewModes = [[NSUserDefaults standardUserDefaults]
+                dictionaryForKey:kMPPerFileViewModeKey];
+            NSNumber *savedMode = perFileViewModes[filePath];
+            if (savedMode)
+                viewMode = savedMode.integerValue;
+        }
+
+        // Fall back to opened-file preference (existing files) or default (new)
+        if (viewMode < 0)
+        {
+            if (self.fileURL)
+                viewMode = self.preferences.openedFileViewMode;
+            else
+                viewMode = self.preferences.defaultViewMode;
+        }
+
+        if (viewMode == 1)
             [self showEditorOnly:nil];
-        }
-        else if (defaultViewMode == 2)
-        {
-            // Preview only
+        else if (viewMode == 2)
             [self showPreviewOnly:nil];
-        }
     }];
 }
 
@@ -480,6 +518,9 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
         self.loadedString = nil;
         [self.renderer parseAndRenderNow];
         [self.highlighter parseAndHighlightNow];
+
+        // Populate document outline
+        [self.sidebarController updateHeadingsFromMarkdown:self.editor.string];
     }
 }
 
@@ -1136,6 +1177,9 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
 {
     if (self.needsHtml)
         [self.renderer parseAndRenderLater];
+
+    // Update document outline in sidebar
+    [self.sidebarController updateHeadingsFromMarkdown:self.editor.string];
 }
 
 - (void)userDefaultsDidChange:(NSNotification *)notification
@@ -1500,12 +1544,14 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
 {
     CGFloat ratio = self.preferences.editorOnRight ? 0.0 : 1.0;
     [self setSplitViewDividerLocation:ratio];
+    [self savePerFileViewMode:1];
 }
 
 - (IBAction)showPreviewOnly:(id)sender
 {
     CGFloat ratio = self.preferences.editorOnRight ? 1.0 : 0.0;
     [self setSplitViewDividerLocation:ratio];
+    [self savePerFileViewMode:2];
 }
 
 - (IBAction)showBothPanes:(id)sender
@@ -1514,6 +1560,37 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
     if (ratio <= 0.0 || ratio >= 1.0)
         ratio = 0.5;
     [self setSplitViewDividerLocation:ratio];
+    [self savePerFileViewMode:0];
+}
+
+- (void)savePerFileViewMode:(NSInteger)mode
+{
+    if (!self.fileURL || !self.preferences.rememberViewModePerFile)
+        return;
+    NSString *filePath = self.fileURL.absoluteString;
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSMutableDictionary *perFileViewModes =
+        [[defaults dictionaryForKey:kMPPerFileViewModeKey] mutableCopy];
+    if (!perFileViewModes)
+        perFileViewModes = [NSMutableDictionary new];
+    perFileViewModes[filePath] = @(mode);
+    [defaults setObject:perFileViewModes forKey:kMPPerFileViewModeKey];
+}
+
+- (IBAction)toggleSidebar:(id)sender
+{
+    [self.sidebarController toggleSidebar];
+}
+
+- (void)sidebarDidSelectHeading:(NSNotification *)notification
+{
+    NSRange range = [notification.userInfo[@"range"] rangeValue];
+    if (range.location != NSNotFound && self.editor)
+    {
+        [self.editor setSelectedRange:NSMakeRange(range.location, 0)];
+        [self.editor scrollRangeToVisible:NSMakeRange(range.location, 0)];
+        [self.editor.window makeFirstResponder:self.editor];
+    }
 }
 
 - (IBAction)render:(id)sender

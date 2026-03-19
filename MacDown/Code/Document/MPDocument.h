@@ -22,5 +22,6 @@
 - (IBAction)showEditorOnly:(id)sender;
 - (IBAction)showPreviewOnly:(id)sender;
 - (IBAction)showBothPanes:(id)sender;
+- (IBAction)toggleSidebar:(id)sender;
 
 @end

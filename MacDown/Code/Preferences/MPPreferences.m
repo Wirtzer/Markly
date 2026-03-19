@@ -75,6 +75,8 @@ static NSString * const kMPDefaultHtmlStyleName = @"GitHub2";
 @dynamic updateIncludesPreReleases;
 @dynamic supressesUntitledDocumentOnLaunch;
 @dynamic createFileForLinkTarget;
+@dynamic openedFileViewMode;
+@dynamic rememberViewModePerFile;
 
 @dynamic extensionIntraEmphasis;
 @dynamic extensionTables;
@@ -283,6 +285,10 @@ static NSString * const kMPDefaultHtmlStyleName = @"GitHub2";
         self.editorInsertPrefixInBlock = YES;
     if (![defaults objectForKey:@"htmlTemplateName"])
         self.htmlTemplateName = @"Default";
+    if (![defaults objectForKey:@"openedFileViewMode"])
+        self.openedFileViewMode = 2; // Preview only for opened files
+    if (![defaults objectForKey:@"rememberViewModePerFile"])
+        self.rememberViewModePerFile = YES;
 }
 
 @end

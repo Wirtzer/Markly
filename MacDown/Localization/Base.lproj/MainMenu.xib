@@ -389,6 +389,13 @@
                                     <action selector="setEditorThreeQuarters:" target="-1" id="IEv-Wg-wJA"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="Toggle Sidebar" keyEquivalent="s" id="RD0-sb-Tgl">
+                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                <connections>
+                                    <action selector="toggleSidebar:" target="-1" id="RD0-sb-Act"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="RD0-sb-Sep"/>
                             <menuItem title="Hide Preview Pane" keyEquivalent="H" id="T74-vt-YUA">
                                 <connections>
                                     <action selector="togglePreviewPane:" target="-1" id="03s-kD-O7K"/>

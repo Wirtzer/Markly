@@ -47,8 +47,15 @@ static CGFloat itemWidth = 37;
 
 - (void)setupToolbarItems
 {
-    // Set up all available toolbar items
+    // Set up all available toolbar items — sidebar + view mode toggle first
     self->toolbarItems = @[
+        [self toolbarItemWithIdentifier:@"toggle-sidebar" label:NSLocalizedString(@"Sidebar", @"Toggle sidebar toolbar button") icon:@"NSLeftFacingTriangleTemplate" action:@selector(toggleSidebar:)],
+        [self toolbarItemGroupWithIdentifier:@"view-mode-group" separated:NO label:NSLocalizedString(@"View Mode", @"") items:@[
+            [self toolbarItemWithIdentifier:@"view-editor" label:NSLocalizedString(@"Editor Only", @"Editor only toolbar button") icon:@"ToolbarIconShiftLeft" action:@selector(showEditorOnly:)],
+            [self toolbarItemWithIdentifier:@"view-both" label:NSLocalizedString(@"Editor & Preview", @"Both panes toolbar button") icon:@"ToolbarIconEditorAndPreview" action:@selector(showBothPanes:)],
+            [self toolbarItemWithIdentifier:@"view-preview" label:NSLocalizedString(@"Preview Only", @"Preview only toolbar button") icon:@"ToolbarIconShiftRight" action:@selector(showPreviewOnly:)]
+            ]
+        ],
         [self toolbarItemGroupWithIdentifier:@"indent-group" separated:YES label:NSLocalizedString(@"Shift Left/Right", @"") items:@[
             [self toolbarItemWithIdentifier:@"shift-left" label:NSLocalizedString(@"Shift Left", @"Shift text to the left toolbar button") icon:@"ToolbarIconShiftLeft" action:@selector(unindent:)],
             [self toolbarItemWithIdentifier:@"shift-right" label:NSLocalizedString(@"Shift Right", @"Shift text to the right toolbar button") icon:@"ToolbarIconShiftRight" action:@selector(indent:)]
@@ -78,13 +85,7 @@ static CGFloat itemWidth = 37;
         [self toolbarItemWithIdentifier:@"copy-html" label:NSLocalizedString(@"Copy HTML", @"Copy HTML toolbar button") icon:@"ToolbarIconCopyHTML" action:@selector(copyHtml:)],
         [self toolbarItemWithIdentifier:@"comment" label:NSLocalizedString(@"Comment", @"Comment toolbar button") icon:@"ToolbarIconComment" action:@selector(toggleComment:)],
         [self toolbarItemWithIdentifier:@"highlight" label:NSLocalizedString(@"Highlight", @"Highlight toolbar button") icon:@"ToolbarIconHighlight" action:@selector(toggleHighlight:)],
-        [self toolbarItemWithIdentifier:@"strikethrough" label:NSLocalizedString(@"Strikethrough", @"Strikethrough toolbar button") icon:@"ToolbarIconStrikethrough" action:@selector(toggleStrikethrough:)],
-        [self toolbarItemGroupWithIdentifier:@"view-mode-group" separated:NO label:NSLocalizedString(@"View Mode", @"") items:@[
-            [self toolbarItemWithIdentifier:@"view-editor" label:NSLocalizedString(@"Editor Only", @"Editor only toolbar button") icon:@"ToolbarIconShiftLeft" action:@selector(showEditorOnly:)],
-            [self toolbarItemWithIdentifier:@"view-both" label:NSLocalizedString(@"Editor & Preview", @"Both panes toolbar button") icon:@"ToolbarIconEditorAndPreview" action:@selector(showBothPanes:)],
-            [self toolbarItemWithIdentifier:@"view-preview" label:NSLocalizedString(@"Preview Only", @"Preview only toolbar button") icon:@"ToolbarIconShiftRight" action:@selector(showPreviewOnly:)]
-            ]
-        ]
+        [self toolbarItemWithIdentifier:@"strikethrough" label:NSLocalizedString(@"Strikethrough", @"Strikethrough toolbar button") icon:@"ToolbarIconStrikethrough" action:@selector(toggleStrikethrough:)]
     ];
     
     self->toolbarItemIdentifiers = [self toolbarItemIdentifiersFromItemsArray:self->toolbarItems];
@@ -133,7 +134,7 @@ static CGFloat itemWidth = 37;
     
     // Add space after the specified toolbar item indices
     int spaceAfterIndices[] = {}; // No space in the default set
-    int flexibleSpaceAfterIndices[] = {2, 3, 5, 7, 11};
+    int flexibleSpaceAfterIndices[] = {1, 4, 5, 7, 9};
     int i = 0;
     int j = 0;
     int k = 0;
