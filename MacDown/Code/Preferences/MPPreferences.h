@@ -19,6 +19,7 @@ extern NSString * const MPDidDetectFreshInstallationNotification;
 @property (assign) BOOL updateIncludesPreReleases;
 @property (assign) BOOL supressesUntitledDocumentOnLaunch;
 @property (assign) BOOL createFileForLinkTarget;
+@property (assign) NSInteger defaultViewMode; // 0=Both, 1=Editor Only, 2=Preview Only
 
 // Extension flags.
 @property (assign) BOOL extensionIntraEmphasis;

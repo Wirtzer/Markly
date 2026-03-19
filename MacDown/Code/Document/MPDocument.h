@@ -19,4 +19,8 @@
 @property (nonatomic, readwrite) NSString *markdown;
 @property (nonatomic, readonly) NSString *html;
 
+- (IBAction)showEditorOnly:(id)sender;
+- (IBAction)showPreviewOnly:(id)sender;
+- (IBAction)showBothPanes:(id)sender;
+
 @end

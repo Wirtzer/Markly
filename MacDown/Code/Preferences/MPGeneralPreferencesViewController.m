@@ -12,10 +12,17 @@
 
 @interface MPGeneralPreferencesViewController ()
 @property (weak) IBOutlet NSButton *autoRenderingToggle;
+@property (weak) IBOutlet NSPopUpButton *defaultViewModePopup;
 @end
 
 
 @implementation MPGeneralPreferencesViewController
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    [self.defaultViewModePopup selectItemWithTag:self.preferences.defaultViewMode];
+}
 
 #pragma mark - MASPreferencesViewController
 
@@ -36,6 +43,11 @@
 
 
 #pragma mark - IBAction
+
+- (IBAction)defaultViewModeChanged:(id)sender
+{
+    self.preferences.defaultViewMode = self.defaultViewModePopup.selectedTag;
+}
 
 - (IBAction)updateWordCounterVisibility:(id)sender
 {

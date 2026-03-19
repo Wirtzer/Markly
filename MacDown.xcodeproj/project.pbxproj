@@ -1191,12 +1191,10 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-MacDown/Pods-MacDown-frameworks.sh",
 				"${PODS_ROOT}/Sparkle/Sparkle.framework",
-				"${PODS_ROOT}/Sparkle/Sparkle.framework.dSYM",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Sparkle.framework",
-				"${DWARF_DSYM_FOLDER_PATH}/Sparkle.framework.dSYM",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1760,8 +1758,8 @@
 				GCC_PREFIX_HEADER = "MacDown/Code/MacDown-Prefix.pch";
 				INFOPLIST_FILE = "MacDown/MacDown-Info.plist";
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.uranusjr.${PRODUCT_NAME:rfc1034identifier:lower}-debug";
-				PRODUCT_NAME = MacDown;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.readdown.app-debug";
+				PRODUCT_NAME = ReadDown;
 				SDKROOT = macosx;
 				WRAPPER_EXTENSION = app;
 			};
@@ -1778,8 +1776,8 @@
 				GCC_PREFIX_HEADER = "MacDown/Code/MacDown-Prefix.pch";
 				INFOPLIST_FILE = "MacDown/MacDown-Info.plist";
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.uranusjr.${PRODUCT_NAME:rfc1034identifier:lower}";
-				PRODUCT_NAME = MacDown;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.readdown.app";
+				PRODUCT_NAME = ReadDown;
 				SDKROOT = macosx;
 				WRAPPER_EXTENSION = app;
 			};
@@ -1789,7 +1787,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 8CDC5EA0050D2F722FB1AADD /* Pods-MacDownTests.debug.xcconfig */;
 			buildSettings = {
-				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/MacDown.app/Contents/MacOS/MacDown";
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/ReadDown.app/Contents/MacOS/ReadDown";
 				CLANG_ENABLE_MODULES = NO;
 				COMBINE_HIDPI_IMAGES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1819,7 +1817,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 0D0EC0DE9FEA22F962083921 /* Pods-MacDownTests.release.xcconfig */;
 			buildSettings = {
-				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/MacDown.app/Contents/MacOS/MacDown";
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/ReadDown.app/Contents/MacOS/ReadDown";
 				CLANG_ENABLE_MODULES = NO;
 				COMBINE_HIDPI_IMAGES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1851,7 +1849,7 @@
 					"DEBUG=1",
 					"$(inherited)",
 				);
-				PRODUCT_NAME = macdown;
+				PRODUCT_NAME = readdown;
 				SKIP_INSTALL = YES;
 			};
 			name = Debug;
@@ -1862,7 +1860,7 @@
 			buildSettings = {
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "";
-				PRODUCT_NAME = macdown;
+				PRODUCT_NAME = readdown;
 				SKIP_INSTALL = YES;
 			};
 			name = Release;

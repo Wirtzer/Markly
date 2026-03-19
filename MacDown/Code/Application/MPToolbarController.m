@@ -47,10 +47,6 @@ static CGFloat itemWidth = 37;
 
 - (void)setupToolbarItems
 {
-    // Set up layout drop down alternatives. title will be set in validateUserInterfaceItem:
-    NSMenuItem *toggleEditorMenuItem = [[NSMenuItem alloc] initWithTitle:@"" action:@selector(toggleEditorPane:) keyEquivalent:@"e"];
-    NSMenuItem *togglePreviewMenuItem = [[NSMenuItem alloc] initWithTitle:@"" action:@selector(togglePreviewPane:) keyEquivalent:@"p"];
-    
     // Set up all available toolbar items
     self->toolbarItems = @[
         [self toolbarItemGroupWithIdentifier:@"indent-group" separated:YES label:NSLocalizedString(@"Shift Left/Right", @"") items:@[
@@ -83,9 +79,10 @@ static CGFloat itemWidth = 37;
         [self toolbarItemWithIdentifier:@"comment" label:NSLocalizedString(@"Comment", @"Comment toolbar button") icon:@"ToolbarIconComment" action:@selector(toggleComment:)],
         [self toolbarItemWithIdentifier:@"highlight" label:NSLocalizedString(@"Highlight", @"Highlight toolbar button") icon:@"ToolbarIconHighlight" action:@selector(toggleHighlight:)],
         [self toolbarItemWithIdentifier:@"strikethrough" label:NSLocalizedString(@"Strikethrough", @"Strikethrough toolbar button") icon:@"ToolbarIconStrikethrough" action:@selector(toggleStrikethrough:)],
-        [self toolbarItemDropDownWithIdentifier:@"layout" label:NSLocalizedString(@"Layout", @"Layout toolbar button") icon:@"ToolbarIconEditorAndPreview" menuItems:
-            @[
-              toggleEditorMenuItem, togglePreviewMenuItem
+        [self toolbarItemGroupWithIdentifier:@"view-mode-group" separated:NO label:NSLocalizedString(@"View Mode", @"") items:@[
+            [self toolbarItemWithIdentifier:@"view-editor" label:NSLocalizedString(@"Editor Only", @"Editor only toolbar button") icon:@"ToolbarIconShiftLeft" action:@selector(showEditorOnly:)],
+            [self toolbarItemWithIdentifier:@"view-both" label:NSLocalizedString(@"Editor & Preview", @"Both panes toolbar button") icon:@"ToolbarIconEditorAndPreview" action:@selector(showBothPanes:)],
+            [self toolbarItemWithIdentifier:@"view-preview" label:NSLocalizedString(@"Preview Only", @"Preview only toolbar button") icon:@"ToolbarIconShiftRight" action:@selector(showPreviewOnly:)]
             ]
         ]
     ];
@@ -109,16 +106,18 @@ static CGFloat itemWidth = 37;
 - (void)selectedToolbarItemGroupItem:(NSSegmentedControl *)sender
 {
     NSInteger selectedIndex = sender.selectedSegment;
-    
+
     NSToolbarItemGroup *selectedGroup = self->toolbarItemIdentifierObjectDictionary[sender.identifier];
     NSToolbarItem *selectedItem = selectedGroup.subitems[selectedIndex];
-    
-    // Invoke the toolbar item's action
-    // Must convert to IMP to let the compiler know about the method definition
+
     MPDocument *document = self.document;
-    IMP imp = [document methodForSelector:selectedItem.action];
-    void (*impFunc)(id) = (void *)imp;
-    impFunc(document);
+    if (document && selectedItem.action)
+    {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+        [document performSelector:selectedItem.action withObject:sender];
+#pragma clang diagnostic pop
+    }
 }
 
 
@@ -244,7 +243,8 @@ static CGFloat itemWidth = 37;
     toolbarItem.label = label;
     toolbarItem.paletteLabel = label;
     toolbarItem.toolTip = label;
-    
+    toolbarItem.action = action;
+
     NSImage *itemImage = [NSImage imageNamed:iconImageName];
     [itemImage setTemplate:YES];
     [itemImage setSize:CGSizeMake(19, 19)];

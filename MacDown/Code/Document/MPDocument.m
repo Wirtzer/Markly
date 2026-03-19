@@ -456,6 +456,19 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
         [self setupEditor:nil];
         [self redrawDivider];
         [self reloadFromLoadedString];
+
+        // Apply default view mode preference
+        NSInteger defaultViewMode = self.preferences.defaultViewMode;
+        if (defaultViewMode == 1)
+        {
+            // Editor only
+            [self showEditorOnly:nil];
+        }
+        else if (defaultViewMode == 2)
+        {
+            // Preview only
+            [self showPreviewOnly:nil];
+        }
     }];
 }
 
@@ -1481,6 +1494,26 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
 - (IBAction)toggleEditorPane:(id)sender
 {
     [self toggleSplitterCollapsingEditorPane:YES];
+}
+
+- (IBAction)showEditorOnly:(id)sender
+{
+    CGFloat ratio = self.preferences.editorOnRight ? 0.0 : 1.0;
+    [self setSplitViewDividerLocation:ratio];
+}
+
+- (IBAction)showPreviewOnly:(id)sender
+{
+    CGFloat ratio = self.preferences.editorOnRight ? 1.0 : 0.0;
+    [self setSplitViewDividerLocation:ratio];
+}
+
+- (IBAction)showBothPanes:(id)sender
+{
+    CGFloat ratio = self.previousSplitRatio;
+    if (ratio <= 0.0 || ratio >= 1.0)
+        ratio = 0.5;
+    [self setSplitViewDividerLocation:ratio];
 }
 
 - (IBAction)render:(id)sender
