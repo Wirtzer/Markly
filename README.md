@@ -23,6 +23,36 @@ Then build and run in Xcode.
 
 ![screenshot](assets/screenshot.png)
 
+## Roadmap
+
+### Phase 1
+- [x] Default view mode preference (Editor / Preview / Both)
+- [x] Toolbar view mode switcher
+- [ ] Per-file mode memory (remember how you opened each file)
+- [ ] "Default to preview for opened files" setting (distinct from new files)
+- [ ] File library sidebar with folder tree
+- [ ] Tabs
+- [ ] Document outline in sidebar
+
+### Phase 2
+- [ ] Focus mode + typewriter mode
+- [ ] WYSIWYG live-render mode
+- [ ] Writing stats panel (word count, reading time, readability scores)
+- [ ] Export to PDF and DOCX
+
+### Phase 3
+- [ ] Math/LaTeX + Mermaid diagrams
+- [ ] WikiLinks + backlinks
+- [ ] Command palette
+- [ ] Prose quality tools
+- [ ] Custom preview themes gallery
+
+### Phase 4
+- [ ] Plugin API
+- [ ] AI authorship tracking
+- [ ] Graph view
+- [ ] Presentation mode
+
 ## License
 
 MacDown v2 is released under the terms of the MIT License. See the `LICENSE` directory for details.
