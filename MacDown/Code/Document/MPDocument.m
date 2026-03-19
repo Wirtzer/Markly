@@ -31,6 +31,7 @@
 #import "WebView+WebViewPrivateHeaders.h"
 #import "MPToolbarController.h"
 #import "MPSidebarController.h"
+#import "MPGlobals.h"
 #import <JavaScriptCore/JavaScriptCore.h>
 
 static NSString * const kMPDefaultAutosaveName = @"Untitled";
