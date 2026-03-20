@@ -1118,21 +1118,17 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
 
 - (BOOL)rendererHasSyntaxHighlighting:(MPRenderer *)renderer
 {
-    return self.preferences.htmlSyntaxHighlighting;
+    return YES;
 }
 
 - (BOOL)rendererHasMermaid:(MPRenderer *)renderer
 {
-    if (self.preferences.htmlMermaid && !self.preferences.htmlSyntaxHighlighting)
-        self.preferences.htmlSyntaxHighlighting = YES;
-    return self.preferences.htmlMermaid;
+    return YES;
 }
 
 - (BOOL)rendererHasGraphviz:(MPRenderer *)renderer
 {
-    if (self.preferences.htmlGraphviz && !self.preferences.htmlSyntaxHighlighting)
-        self.preferences.htmlSyntaxHighlighting = YES;
-    return self.preferences.htmlGraphviz;
+    return YES;
 }
 
 - (MPCodeBlockAccessoryType)rendererCodeBlockAccesory:(MPRenderer *)renderer
