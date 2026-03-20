@@ -1216,6 +1216,20 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
     }
 #endif
 
+    // Highlight filler words in preview if enabled
+    if (self.preferences.editorHighlightFillers)
+    {
+        html = [MPFillerHighlighter highlightFillersInHTML:html];
+        // Inject CSS for filler highlights
+        NSString *fillerCSS = @"<style>mark.filler{background:#fff59d;padding:1px 2px;border-radius:2px;}</style>";
+        NSRange headEnd = [html rangeOfString:@"</head>" options:NSCaseInsensitiveSearch];
+        if (headEnd.location != NSNotFound)
+            html = [html stringByReplacingCharactersInRange:headEnd
+                    withString:[fillerCSS stringByAppendingString:@"</head>"]];
+        else
+            html = [fillerCSS stringByAppendingString:html];
+    }
+
     // Reload the page if there's not valid tree to work with.
     [self.preview.mainFrame loadHTMLString:html baseURL:baseUrl];
     self.currentBaseUrl = baseUrl;

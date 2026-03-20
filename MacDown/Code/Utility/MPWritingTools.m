@@ -160,3 +160,89 @@ static NSSet *MPFillerWords()
 }
 
 @end
+
+
+#pragma mark - Filler Highlighter for HTML
+
+@implementation MPFillerHighlighter
+
++ (NSString *)highlightFillersInHTML:(NSString *)html
+{
+    if (!html.length)
+        return html;
+
+    // Build a regex that matches any filler word at word boundaries
+    NSSet *fillers = MPFillerWords();
+    NSString *pattern = [NSString stringWithFormat:@"\\b(%@)\\b",
+        [[fillers allObjects] componentsJoinedByString:@"|"]];
+
+    NSRegularExpression *regex = [NSRegularExpression
+        regularExpressionWithPattern:pattern
+                             options:NSRegularExpressionCaseInsensitive
+                               error:nil];
+
+    // Only highlight inside text nodes (not inside HTML tags or code blocks).
+    // Simple approach: split on tags, process text parts only.
+    NSMutableString *result = [NSMutableString string];
+    NSRegularExpression *tagRegex = [NSRegularExpression
+        regularExpressionWithPattern:@"(<[^>]*>)"
+                             options:0 error:nil];
+
+    NSArray *tagMatches = [tagRegex matchesInString:html options:0
+                                              range:NSMakeRange(0, html.length)];
+
+    NSUInteger lastEnd = 0;
+    BOOL insideCode = NO;
+
+    for (NSTextCheckingResult *tagMatch in tagMatches)
+    {
+        // Process text before this tag
+        if (tagMatch.range.location > lastEnd)
+        {
+            NSRange textRange = NSMakeRange(lastEnd, tagMatch.range.location - lastEnd);
+            NSString *textPart = [html substringWithRange:textRange];
+
+            if (insideCode)
+            {
+                [result appendString:textPart];
+            }
+            else
+            {
+                NSString *highlighted = [regex stringByReplacingMatchesInString:textPart
+                    options:0 range:NSMakeRange(0, textPart.length)
+                    withTemplate:@"<mark class=\"filler\">$1</mark>"];
+                [result appendString:highlighted];
+            }
+        }
+
+        // Append the tag itself
+        NSString *tag = [html substringWithRange:tagMatch.range];
+        [result appendString:tag];
+
+        // Track code blocks
+        NSString *tagLower = tag.lowercaseString;
+        if ([tagLower hasPrefix:@"<code"] || [tagLower hasPrefix:@"<pre"])
+            insideCode = YES;
+        else if ([tagLower hasPrefix:@"</code"] || [tagLower hasPrefix:@"</pre"])
+            insideCode = NO;
+
+        lastEnd = NSMaxRange(tagMatch.range);
+    }
+
+    // Process remaining text after last tag
+    if (lastEnd < html.length)
+    {
+        NSString *textPart = [html substringFromIndex:lastEnd];
+        if (!insideCode)
+        {
+            textPart = [regex stringByReplacingMatchesInString:textPart
+                options:0 range:NSMakeRange(0, textPart.length)
+                withTemplate:@"<mark class=\"filler\">$1</mark>"];
+        }
+        [result appendString:textPart];
+    }
+
+    return result;
+}
+
+@end

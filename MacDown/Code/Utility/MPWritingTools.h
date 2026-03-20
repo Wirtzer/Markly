@@ -10,6 +10,11 @@
 + (NSString *)processWikiLinksInMarkdown:(NSString *)markdown baseURL:(NSURL *)baseURL;
 @end
 
+// Filler word highlighting in HTML
+@interface MPFillerHighlighter : NSObject
++ (NSString *)highlightFillersInHTML:(NSString *)html;
+@end
+
 // Prose quality analysis
 @interface MPProseAnalysis : NSObject
 @property (nonatomic, strong) NSArray<NSValue *> *fillerWordRanges;
