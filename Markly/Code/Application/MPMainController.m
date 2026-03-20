@@ -220,11 +220,6 @@ NS_INLINE void treat()
     MPOpenBundledFile(@"help", @"md");
 }
 
-- (IBAction)showContributing:(id)sender
-{
-    MPOpenBundledFile(@"contribute", @"md");
-}
-
 
 #pragma mark - Override
 
