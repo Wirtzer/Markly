@@ -357,7 +357,6 @@ NS_INLINE void treat()
 - (void)showFirstLaunchTips
 {
     [self showHelp:nil];
-    [self showContributing:nil];
 }
 
 
