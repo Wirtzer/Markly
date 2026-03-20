@@ -2,7 +2,7 @@
 
 **Version 1.0.0** | March 2026
 
-A free, open-source Markdown editor for macOS. Built for people who read and write Markdown every day.
+A free Markdown editor for macOS. Built for people who read and write Markdown every day.
 
 Based on [MacDown](https://github.com/MacDownApp/macdown) by Tzu-ping Chung, rebuilt with modern features.
 
@@ -51,6 +51,6 @@ Build and run in Xcode (Cmd+R).
 
 ## License
 
-Markly is released under the MIT License. See the `LICENSE` directory for details.
+The original MacDown code is under the MIT License. See the `LICENSE` directory for details. All rights reserved for new features and additions.
 
 Editor themes and CSS from [Mou](http://mouapp.com) by Chen Luo.

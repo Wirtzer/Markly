@@ -2,7 +2,7 @@
 
 **Version 1.0.0** | March 2026
 
-Markly is a free, open-source Markdown editor for macOS. It renders your Markdown in real-time and includes powerful writing tools to help you write cleaner, more concise prose.
+Markly is a free Markdown editor for macOS. It renders your Markdown in real-time and includes powerful writing tools to help you write cleaner, more concise prose.
 
 ---
 
@@ -216,4 +216,4 @@ Choose a preview CSS theme in **Preferences > Rendering > CSS**:
 
 ## License
 
-Markly is free and open source, released under the MIT License. Based on [MacDown](https://github.com/MacDownApp/macdown) by Tzu-ping Chung.
+Markly is free. Built on [MacDown](https://github.com/MacDownApp/macdown) by Tzu-ping Chung.
