@@ -1,6 +1,6 @@
 //
 //  MPSidebarController.m
-//  ReadDown
+//  Markly
 //
 
 #import "MPSidebarController.h"

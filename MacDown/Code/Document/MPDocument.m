@@ -370,7 +370,7 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
     if (@available(macOS 10.12, *))
     {
         controller.window.tabbingMode = NSWindowTabbingModeAutomatic;
-        controller.window.tabbingIdentifier = @"ReadDownDocumentWindow";
+        controller.window.tabbingIdentifier = @"MarklyDocumentWindow";
     }
 
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];

@@ -1,6 +1,6 @@
 //
 //  MPSidebarController.h
-//  ReadDown
+//  Markly
 //
 
 #import <Cocoa/Cocoa.h>

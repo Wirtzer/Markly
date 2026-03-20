@@ -1776,8 +1776,8 @@
 				GCC_PREFIX_HEADER = "MacDown/Code/MacDown-Prefix.pch";
 				INFOPLIST_FILE = "MacDown/MacDown-Info.plist";
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.readdown.app-debug";
-				PRODUCT_NAME = ReadDown;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.markly.app-debug";
+				PRODUCT_NAME = Markly;
 				SDKROOT = macosx;
 				WRAPPER_EXTENSION = app;
 			};
@@ -1794,8 +1794,8 @@
 				GCC_PREFIX_HEADER = "MacDown/Code/MacDown-Prefix.pch";
 				INFOPLIST_FILE = "MacDown/MacDown-Info.plist";
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.readdown.app";
-				PRODUCT_NAME = ReadDown;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.markly.app";
+				PRODUCT_NAME = Markly;
 				SDKROOT = macosx;
 				WRAPPER_EXTENSION = app;
 			};
@@ -1805,7 +1805,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 8CDC5EA0050D2F722FB1AADD /* Pods-MacDownTests.debug.xcconfig */;
 			buildSettings = {
-				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/ReadDown.app/Contents/MacOS/ReadDown";
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Markly.app/Contents/MacOS/Markly";
 				CLANG_ENABLE_MODULES = NO;
 				COMBINE_HIDPI_IMAGES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1835,7 +1835,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 0D0EC0DE9FEA22F962083921 /* Pods-MacDownTests.release.xcconfig */;
 			buildSettings = {
-				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/ReadDown.app/Contents/MacOS/ReadDown";
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Markly.app/Contents/MacOS/Markly";
 				CLANG_ENABLE_MODULES = NO;
 				COMBINE_HIDPI_IMAGES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1867,7 +1867,7 @@
 					"DEBUG=1",
 					"$(inherited)",
 				);
-				PRODUCT_NAME = readdown;
+				PRODUCT_NAME = markly;
 				SKIP_INSTALL = YES;
 			};
 			name = Debug;
@@ -1878,7 +1878,7 @@
 			buildSettings = {
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "";
-				PRODUCT_NAME = readdown;
+				PRODUCT_NAME = markly;
 				SKIP_INSTALL = YES;
 			};
 			name = Release;

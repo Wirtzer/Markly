@@ -1,6 +1,6 @@
 //
 //  MPCommandPalette.m
-//  ReadDown
+//  Markly
 //
 
 #import "MPCommandPalette.h"

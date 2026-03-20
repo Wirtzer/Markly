@@ -1,6 +1,6 @@
 //
 //  MPWritingTools.m
-//  ReadDown
+//  Markly
 //
 
 #import "MPWritingTools.h"

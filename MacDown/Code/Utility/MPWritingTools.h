@@ -1,6 +1,6 @@
 //
 //  MPWritingTools.h
-//  ReadDown
+//  Markly
 //
 
 #import <Foundation/Foundation.h>
