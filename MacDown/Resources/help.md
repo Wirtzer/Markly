@@ -1,358 +1,219 @@
-# MacDown
+# Markly
 
-![MacDown logo](https://macdown.uranusjr.com/static/images/logo-160.png)
+**Version 1.0.0** | March 2026
 
-Hello there! I’m **MacDown**, the open source Markdown editor for OS X.
+Markly is a free, open-source Markdown editor for macOS. It renders your Markdown in real-time and includes powerful writing tools to help you write cleaner, more concise prose.
 
-Let me introduce myself.
+---
 
+## Getting Started
 
+Markly has three view modes. Set your default in **Preferences > General**:
 
-## Markdown and I
+- **Editor & Preview** — split pane with Markdown on the left, rendered output on the right
+- **Editor Only** — full-screen Markdown editing
+- **Preview Only** — full-screen rendered output (great for reading)
 
-**Markdown** is a plain text formatting syntax created by John Gruber, aiming to provide a easy-to-read and feasible markup. The original Markdown syntax specification can be found [here](https://daringfireball.net/projects/markdown/syntax).
+You can set different defaults for new files vs. existing files, and Markly remembers the view mode you last used for each file.
 
-**MacDown** is created as a simple-to-use editor for Markdown documents. I render your Markdown contents real-time into HTML, and display them in a preview panel.
+### Keyboard Shortcuts
 
-![MacDown Screenshot](https://d.pr/i/10UGP+)
+| Shortcut | Action |
+|---|---|
+| Cmd+Shift+K | Command Palette (search all commands) |
+| Cmd+Opt+S | Toggle Sidebar |
+| Cmd+Opt+F | Focus Mode |
+| Cmd+Shift+T | Typewriter Mode |
+| Cmd+Opt+E | Export HTML |
+| Cmd+Opt+P | Export PDF |
+| Cmd+Opt+D | Export DOCX |
 
-I support all the original Markdown syntaxes. But I can do so much more! Various popular but non-standard syntaxes can be turned on/off from the [**Markdown** preference pane](#markdown-pane).
+---
 
-You can specify extra HTML rendering options through the [**Rendering** preference pane](#rendering-pane).
+## Writing Tools
 
-You can customize the editor window to your liking in the [**Editor** preferences pane](#editor-pane):
+### Focus Mode (Cmd+Opt+F)
+Dims all text except the paragraph you're currently writing in. Helps you concentrate on one thought at a time without visual distraction.
 
-You can configure various application (that's me!) behaviors in the [**General** preference pane](#general-pane).
+### Typewriter Mode (Cmd+Shift+T)
+Keeps the line you're typing on vertically centered in the editor window, so your eyes stay in the middle of the screen.
 
-## The Basics
-Before I tell you about all the extra syntaxes and capabilities I have, I'll introduce you to the basics of standard markdown. If you already know markdown, and want to jump straight to learning about the fancier things I can do, I suggest you skip to the [**Markdown** preference pane](#markdown-pane). Lets jump right in.  
+### Weasel Word Highlighting
+Toggle via **Command Palette** or **View > Highlight Filler Words**. Highlights weak language in your writing with color-coded categories:
 
-### Line Breaks
-To force a line break, put two spaces and a newline (return) at the end of the line.
+| Color | Category | Examples |
+|---|---|---|
+| Yellow | Unnecessary qualifiers | actually, basically, very, just, really |
+| Orange | Weasel words | should, might, could, significant, many |
+| Pink | Indirect/vague language | believe, think, seems, perhaps, things |
+| Blue | Weak adverbs | quickly, greatly, tremendously |
+| Red | Repeated consecutive words | the the, is is |
 
-* This two-line bullet 
-won't break
+Click the issue counter in the bottom-right corner to see a breakdown by category. Updates live as you type.
 
-* This two-line bullet  
-will break
+### Writing Statistics
+The word count menu (bottom of the editor) shows:
+- Word count, character count
+- Estimated reading time
+- Readability score (Flesch Reading Ease)
 
-Here is the code:
+---
+
+## Sidebar (Cmd+Opt+S)
+
+The sidebar has two tabs:
+
+- **Files** — browse Markdown files in the same directory as your document. Double-click to open.
+- **Outline** — shows all headings in the current document as a navigable tree. Double-click a heading to jump to it.
+
+---
+
+## Tabs
+
+Markly supports native macOS window tabbing. Open multiple files and use **Window > Merge All Windows** to combine them into tabs.
+
+---
+
+## WikiLinks
+
+Link between Markdown files using double-bracket syntax:
 
 ```
-* This two-line bullet 
-won't break
-
-* This two-line bullet  
-will break
+[[another note]]
+[[another note|display text]]
 ```
 
-### Strong and Emphasize
+Links to existing files appear in blue. Links to missing files appear in red.
 
-**Strong**: `**Strong**` or `__Strong__` (Command-B)  
-*Emphasize*: `*Emphasize*` or `_Emphasize_`[^emphasize] (Command-I)
+---
 
-### Headers (like this one!)
+## Command Palette (Cmd+Shift+K)
 
-	Header 1
-	========
+Quickly search and execute any command. Type to filter, use arrow keys to navigate, Enter to execute. Toggle features show a checkmark when active.
 
-	Header 2
-	--------
+---
 
-or
+## Markdown Basics
 
-	# Header 1
-	## Header 2
-	### Header 3
-	#### Header 4
-	##### Header 5
-	###### Header 6
+### Text Formatting
 
+**Bold**: `**Bold**` (Cmd+B)
+*Italic*: `*Italic*` (Cmd+I)
+~~Strikethrough~~: `~~Strikethrough~~`
+==Highlight==: `==Highlight==`
 
+### Headers
 
-### Links and Email
-#### Inline
-Just put angle brackets around an email and it becomes clickable: <uranusjr@gmail.com>  
-`<uranusjr@gmail.com>`  
+```
+# Header 1
+## Header 2
+### Header 3
+```
 
-Same thing with urls: <https://macdown.uranusjr.com>  
-` <https://macdown.uranusjr.com>`  
+### Links
 
-Perhaps you want to link some text like this: [Macdown Website](https://macdown.uranusjr.com "Title")  
-`[Macdown Website](https://macdown.uranusjr.com "Title")` (The title is optional)  
-
-
-#### Reference style
-Sometimes it looks too messy to include big long urls inline, or you want to keep all your urls together.  
-
-Make [a link][arbitrary_id] `[a link][arbitrary_id]` then on it's own line anywhere else in the file:  
-`[arbitrary_id]: https://macdown.uranusjr.com "Title"`
-  
-If the link text itself would make a good id, you can link [like this][] `[like this][]`, then on it's own line anywhere else in the file:  
-`[like this]: https://macdown.uranusjr.com`  
-
-[arbitrary_id]: https://macdown.uranusjr.com "Title"
-[like this]: https://macdown.uranusjr.com  
-
+```
+[Link text](https://example.com)
+```
 
 ### Images
-#### Inline
-`![Alt Image Text](path/or/url/to.jpg "Optional Title")`
-#### Reference style
-`![Alt Image Text][image-id]`  
-on it's own line elsewhere:  
-`[image-id]: path/or/url/to.jpg "Optional Title"`
 
+```
+![Alt text](path/to/image.jpg)
+```
 
 ### Lists
 
-* Lists must be preceded by a blank line (or block element)
-* Unordered lists start each item with a `*`
-- `-` works too
-	* Indent a level to make a nested list
-		1. Ordered lists are supported.
-		2. Start each item (number-period-space) like `1. `
-		42. It doesn't matter what number you use, I will render them sequentially
-		1. So you might want to start each line with `1.` and let me sort it out
-
-Here is the code:
-
 ```
-* Lists must be preceded by a blank line (or block element)
-* Unordered lists start each item with a `*`
-- `-` works too
-	* Indent a level to make a nested list
-		1. Ordered lists are supported.
-		2. Start each item (number-period-space) like `1. `
-		42. It doesn't matter what number you use, I will render them sequentially
-		1. So you might want to start each line with `1.` and let me sort it out
+- Unordered item
+- Another item
+
+1. Ordered item
+2. Another item
 ```
 
+### Code
 
+Inline: `` `code` ``
 
-### Block Quote
+Block:
 
-> Angle brackets `>` are used for block quotes.  
-Technically not every line needs to start with a `>` as long as
-there are no empty lines between paragraphs.  
-> Looks kinda ugly though.
-> > Block quotes can be nested.  
-> > > Multiple Levels
->
-> Most markdown syntaxes work inside block quotes.
->
-> * Lists
-> * [Links][arbitrary_id]
-> * Etc.
+````
+```python
+print("Hello world")
+```
+````
 
-Here is the code:
+### Tables
 
 ```
-> Angle brackets `>` are used for block quotes.  
-Technically not every line needs to start with a `>` as long as
-there are no empty lines between paragraphs.  
-> Looks kinda ugly though.
-> > Block quotes can be nested.  
-> > > Multiple Levels
->
-> Most markdown syntaxes work inside block quotes.
->
-> * Lists
-> * [Links][arbitrary_id]
-> * Etc.
-```
-  
-  
-### Inline Code
-`Inline code` is indicated by surrounding it with backticks:  
-`` `Inline code` ``
-
-If your ``code has `backticks` `` that need to be displayed, you can use double backticks:  
-```` ``Code with `backticks` `` ````  (mind the spaces preceding the final set of backticks)
-
-
-### Block Code
-If you indent at least four spaces or one tab, I'll display a code block.
-
-	print('This is a code block')
-	print('The block must be preceded by a blank line')
-	print('Then indent at least 4 spaces or 1 tab')
-		print('Nesting does nothing. Your code is displayed Literally')
-
-I also know how to do something called [Fenced Code Blocks](#fenced-code-block) which I will tell you about later.
-
-### Horizontal Rules
-If you type three asterisks `***` or three dashes `---` on a line, I'll display a horizontal rule:
-
-***
-
-
-## <a name="markdown-pane"></a>The Markdown Preference Pane
-This is where I keep all preferences related to how I parse markdown into html.  
-![Markdown preferences pane](https://d.pr/i/RQEi+)
-
-### Document Formatting
-The ***Smartypants*** extension automatically transforms straight quotes (`"` and `'`) in your text into typographer’s quotes (`“`, `”`, `‘`, and `’`) according to the context. Very useful if you’re a typography freak like I am. Quote and Smartypants are syntactically incompatible. If both are enabled, Quote takes precedence.
-
-
-### Block Formatting
-
-#### Table
-
-This is a table:
-
-First Header  | Second Header
-------------- | -------------
-Content Cell  | Content Cell
-Content Cell  | Content Cell
-
-You can align cell contents with syntax like this:
-
-| Left Aligned  | Center Aligned  | Right Aligned |
-|:------------- |:---------------:| -------------:|
-| col 3 is      | some wordy text |         $1600 |
-| col 2 is      | centered        |           $12 |
-| zebra stripes | are neat        |            $1 |
-
-The left- and right-most pipes (`|`) are only aesthetic, and can be omitted. The spaces don’t matter, either. Alignment depends solely on `:` marks.
-
-#### <a name="fenced-code-block">Fenced Code Block</a>
-
-This is a fenced code block:
-
-```
-print('Hello world!')
+| Column 1 | Column 2 |
+|----------|----------|
+| Cell     | Cell     |
 ```
 
-You can also use waves (`~`) instead of back ticks (`` ` ``):
-
-~~~
-print('Hello world!')
-~~~
-
-
-You can add an optional language ID at the end of the first line. The language ID will only be used to highlight the code inside if you tick the ***Enable highlighting in code blocks*** option. This is what happens if you enable it:
-
-![Syntax highlighting example](https://d.pr/i/9HM6+)
-
-I support many popular languages as well as some generic syntax descriptions that can be used if your language of choice is not supported. See [relevant sections on the official site](https://macdown.uranusjr.com/features/) for a full list of supported syntaxes.
-
-
-### Inline Formatting
-
-The following is a list of optional inline markups supported:
-
-Option name         | Markup           | Result if enabled     |
---------------------|------------------|-----------------------|
-Intra-word emphasis | So A\*maz\*ing   | So A<em>maz</em>ing   |
-Strikethrough       | \~~Much wow\~~   | <del>Much wow</del>   |
-Underline [^under]  | \_So doge\_      | <u>So doge</u>        |
-Quote [^quote]      | \"Such editor\"  | <q>Such editor</q>    |
-Highlight           | \==So good\==    | <mark>So good</mark>  |
-Superscript         | hoge\^(fuga)     | hoge<sup>fuga</sup>   |
-Autolink            | http://t.co      | <http://t.co>         |
-Footnotes           | [\^4] and [\^4]: | [^4] and footnote 4   |
-
-[^4]: You don't have to use a number. Arbitrary things like `[^footy note4]` and `[^footy note4]:` will also work. But they will *render* as numbered footnotes. Also, no need to keep your footnotes in order, I will sort out the order for you so they appear in the same order they were referenced in the text body. You can even keep some footnotes near where you referenced them, and collect others at the bottom of the file in the traditional place for footnotes. 
-
-
-
-
-## <a name="rendering-pane"></a>The Rendering Preference Pane
-This is where I keep preferences relating to how I render and style the parsed markdown in the preview window.  
-![Rendering preferences pane](https://d.pr/i/rT4d+)
-
-### CSS
-You can choose different css files for me to use to render your html. You can even customize or add your own custom css files.
-
-### Syntax Highlighting
-You have already seen how I can syntax highlight your fenced code blocks. See the [Fenced Code Block](#fenced-code-block) section if you haven’t! You can also choose different themes for syntax highlighting.
-
-### TeX-like Math Syntax
-I can also render TeX-like math syntaxes, if you allow me to.[^math] I can do inline math like this: \\( 1 + 1 \\) or this (in MathML): <math><mn>1</mn><mo>+</mo><mn>1</mn></math>, and block math:
-
-\\[
-    A^T_S = B
-\\]
-
-or (in MathML)
-
-<math display="block">
-    <msubsup><mi>A</mi> <mi>S</mi> <mi>T</mi></msubsup>
-    <mo>=</mo>
-    <mi>B</mi>
-</math>
-
-
-
-### Task List Syntax
-1. [x] I can render checkbox list syntax
-	* [x] I support nesting
-	* [x] I support ordered *and* unordered lists
-2. [ ] I don't support clicking checkboxes directly in the html window
-
-
-### Jekyll front-matter
-If you like, I can display Jekyll front-matter in a nice table. Just make sure you put the front-matter at the very beginning of the file, and fence it with `---`. For example:
+### Block Quotes
 
 ```
+> This is a quote
+```
+
 ---
-title: "Macdown is my friend"
-date: 2014-06-06 20:00:00
+
+## Diagrams
+
+Markly automatically renders Mermaid diagrams and Graphviz graphs in fenced code blocks:
+
+````
+```mermaid
+graph LR
+    A[Start] --> B[Process]
+    B --> C[End]
+```
+````
+
 ---
-```
 
-### Render newline literally
-Normally I require you to put two spaces and a newline (aka return) at the end of a line in order to create a line break. If you like, I can render a newline any time you end a line with a newline. However, if you enable this, markdown that looks lovely when I render it might look pretty funky when you let some *other* program render it.
+## Math
 
-
-## <a name="general-pane"></a>The General Preferences Pane
-
-This is where I keep preferences related to application behavior.  
-![General preferences pane](https://d.pr/i/rvwu+)
-
-The General Preferences Pane allows you to tell me how you want me to behave. For example, do you want me to make sure there is a document open when I launch? You can also tell me if I should constantly update the preview window as you type, or wait for you to hit `command-R` instead. Maybe you prefer your editor window on the right? Or to see the word-count as you type. This is also the place to tell me if you are interested in pre-releases of me, or just want to stick to better-tested official releases.  
-
-## <a name="editor-pane"></a>The Editor Preference Pane
-This is where I keep preferences related to the behavior and styling of the editing window.  
-![Editor preferences pane](https://d.pr/i/6OL5+)
-
-
-### Styling
-
-My editor provides syntax highlighting. You can edit the base font and the coloring/sizing theme. I provided some default themes (courtesy of [Mou](http://mouapp.com)’s creator, Chen Luo) if you don’t know where to start.
-
-You can also edit, or even add new themes if you want to! Just click the ***Reveal*** button, and start moving things around. Remember to use the correct file extension (`.styles`), though. I’m picky about that.
-
-I offer auto-completion and other functions to ease your editing experience. If you don’t like it, however, you can turn them off.
-
-
-## Hidden preference
-
-You can see the HTML behind a preview by enabling the OS X built-in WebKit developer tools for MacDown in a terminal window:
+TeX-like math syntax is supported. Enable **Use dollar sign ($) as inline delimiter** in Preferences > Rendering for inline math:
 
 ```
-defaults write com.uranusjr.macdown WebKitDeveloperExtras -bool true
+Inline: $E = mc^2$
+
+Block:
+$$
+\sum_{i=1}^{n} x_i
+$$
 ```
 
-Then select “Inspect Element” in the right-click context menu inside the preview pane.
+Note: Math rendering requires an internet connection.
 
-This is the exact same inspector you find in Safari if you turn on the developer tools.
+---
 
+## Export
 
-## Hack On
+Export your documents via **File > Export**:
 
-That’s about it. Thanks for listening. I’ll be quiet from now on (unless there’s an update about the app—I’ll remind you for that!).
+- **HTML** — standalone HTML file
+- **PDF** — print-quality PDF
+- **Word Document (DOCX)** — compatible with Microsoft Word
 
-Happy writing!
+---
 
+## Preview Themes
 
-[^emphasize]: If **Underlines** is turned on, `_this notation_` will render as underlined instead of emphasized 
+Choose a preview CSS theme in **Preferences > Rendering > CSS**:
 
-[^under]: If **Underline** is disabled `_this_` will be rendered as *emphasized* instead of being underlined.
+- GitHub2 (default)
+- Minimal Light
+- Minimal Dark
+- iA Writer
+- Clearness / Clearness Dark
+- Solarized Light / Dark
 
-[^quote]: **Quote** replaces literal `"` characters with html `<q>` tags. **Quote** and **Smartypants** are syntactically incompatible. If both are enabled, **Quote** takes precedence. Note that **Quote** is different from *blockquote*, which is part of standard Markdown.
+---
 
-[^math]: Internet connection required.
+## License
 
-
+Markly is free and open source, released under the MIT License. Based on [MacDown](https://github.com/MacDownApp/macdown) by Tzu-ping Chung.
