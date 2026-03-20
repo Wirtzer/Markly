@@ -26,5 +26,7 @@
 - (IBAction)toggleFocusMode:(id)sender;
 - (IBAction)toggleTypewriterMode:(id)sender;
 - (IBAction)exportToDOCX:(id)sender;
+- (IBAction)showCommandPalette:(id)sender;
+- (IBAction)toggleProseAnalysis:(id)sender;
 
 @end

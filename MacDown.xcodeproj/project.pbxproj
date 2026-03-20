@@ -34,6 +34,8 @@
 		1F3386E61A6B999600FC88C4 /* DOMNode+Text.m in Sources */ = {isa = PBXBuildFile; fileRef = 1F3386E51A6B999600FC88C4 /* DOMNode+Text.m */; };
 		1F33F2A11A3B4B660001C849 /* MPDocumentSplitView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1F33F2A01A3B4B660001C849 /* MPDocumentSplitView.m */; };
 		RD00000001000000000000001 /* MPSidebarController.m in Sources */ = {isa = PBXBuildFile; fileRef = RD00000002000000000000001 /* MPSidebarController.m */; };
+		RD00000004000000000000001 /* MPWritingTools.m in Sources */ = {isa = PBXBuildFile; fileRef = RD00000005000000000000001 /* MPWritingTools.m */; };
+		RD00000006000000000000001 /* MPCommandPalette.m in Sources */ = {isa = PBXBuildFile; fileRef = RD00000007000000000000001 /* MPCommandPalette.m */; };
 		1F33F2A41A3B56D20001C849 /* NSColor+HTML.m in Sources */ = {isa = PBXBuildFile; fileRef = 1F33F2A31A3B56D20001C849 /* NSColor+HTML.m */; };
 		1F3619E61F36DA0F00EDA15A /* MPTerminalPreferencesViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1F3619E81F36DA0F00EDA15A /* MPTerminalPreferencesViewController.xib */; };
 		1F396E6619B0EA17000D3EFC /* MPEditorView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1F396E6519B0EA17000D3EFC /* MPEditorView.m */; };
@@ -252,6 +254,10 @@
 		1F33F2A01A3B4B660001C849 /* MPDocumentSplitView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPDocumentSplitView.m; sourceTree = "<group>"; };
 		RD00000003000000000000001 /* MPSidebarController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPSidebarController.h; sourceTree = "<group>"; };
 		RD00000002000000000000001 /* MPSidebarController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPSidebarController.m; sourceTree = "<group>"; };
+		RD00000008000000000000001 /* MPWritingTools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPWritingTools.h; sourceTree = "<group>"; };
+		RD00000005000000000000001 /* MPWritingTools.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPWritingTools.m; sourceTree = "<group>"; };
+		RD00000009000000000000001 /* MPCommandPalette.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPCommandPalette.h; sourceTree = "<group>"; };
+		RD00000007000000000000001 /* MPCommandPalette.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPCommandPalette.m; sourceTree = "<group>"; };
 		1F33F2A21A3B56D20001C849 /* NSColor+HTML.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSColor+HTML.h"; sourceTree = "<group>"; };
 		1F33F2A31A3B56D20001C849 /* NSColor+HTML.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSColor+HTML.m"; sourceTree = "<group>"; };
 		1F3619E71F36DA0F00EDA15A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MPTerminalPreferencesViewController.xib; sourceTree = "<group>"; };
@@ -598,6 +604,8 @@
 			children = (
 				1F70CCD81978F03E00703429 /* MPAutosaving.h */,
 				1F847BC31DCC9DA800A47385 /* MPGlobals.h */,
+				RD00000008000000000000001 /* MPWritingTools.h */,
+				RD00000005000000000000001 /* MPWritingTools.m */,
 				1F96BD7E1E584A03005E0456 /* MPHomebrewSubprocessController.h */,
 				1F96BD7F1E584A03005E0456 /* MPHomebrewSubprocessController.m */,
 				1F23A91F19928E650052DB78 /* MPMathJaxListener.h */,
@@ -660,6 +668,8 @@
 				1F33F2A01A3B4B660001C849 /* MPDocumentSplitView.m */,
 				RD00000003000000000000001 /* MPSidebarController.h */,
 				RD00000002000000000000001 /* MPSidebarController.m */,
+				RD00000009000000000000001 /* MPCommandPalette.h */,
+				RD00000007000000000000001 /* MPCommandPalette.m */,
 				1F396E6419B0EA17000D3EFC /* MPEditorView.h */,
 				1F396E6519B0EA17000D3EFC /* MPEditorView.m */,
 			);
@@ -1238,6 +1248,8 @@
 				1F8A835E1953454F00B6BF69 /* HGMarkdownHighlightingStyle.m in Sources */,
 				1F33F2A11A3B4B660001C849 /* MPDocumentSplitView.m in Sources */,
 				RD00000001000000000000001 /* MPSidebarController.m in Sources */,
+				RD00000004000000000000001 /* MPWritingTools.m in Sources */,
+				RD00000006000000000000001 /* MPCommandPalette.m in Sources */,
 				1F23A92119928E650052DB78 /* MPMathJaxListener.m in Sources */,
 				1F2649B01A7406DB00EF6AF3 /* NSDocumentController+Document.m in Sources */,
 				1F0D9D67194AC7CF008E1856 /* MPUtilities.m in Sources */,

@@ -32,6 +32,8 @@
 #import "MPToolbarController.h"
 #import "MPSidebarController.h"
 #import "MPGlobals.h"
+#import "MPWritingTools.h"
+#import "MPCommandPalette.h"
 #import <JavaScriptCore/JavaScriptCore.h>
 
 static NSString * const kMPDefaultAutosaveName = @"Untitled";
@@ -1033,7 +1035,13 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
     
 - (NSString *)rendererMarkdown:(MPRenderer *)renderer
 {
-    return self.editor.string;
+    NSString *markdown = self.editor.string;
+
+    // Process WikiLinks: [[target]] and [[target|display]]
+    NSURL *baseDir = [self.fileURL URLByDeletingLastPathComponent];
+    markdown = [MPWikiLinkProcessor processWikiLinksInMarkdown:markdown baseURL:baseDir];
+
+    return markdown;
 }
 
 - (NSString *)rendererHTMLTitle:(MPRenderer *)renderer
@@ -1654,6 +1662,93 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
         [self.editor scrollRangeToVisible:NSMakeRange(range.location, 0)];
         [self.editor.window makeFirstResponder:self.editor];
     }
+}
+
+- (IBAction)showCommandPalette:(id)sender
+{
+    NSArray *commands = @[
+        [MPCommandItem itemWithTitle:@"Toggle Sidebar" shortcut:@"\u2325\u2318S" action:@selector(toggleSidebar:) target:self],
+        [MPCommandItem itemWithTitle:@"Focus Mode" shortcut:@"\u2325\u2318F" action:@selector(toggleFocusMode:) target:self],
+        [MPCommandItem itemWithTitle:@"Typewriter Mode" shortcut:@"\u21E7\u2318T" action:@selector(toggleTypewriterMode:) target:self],
+        [MPCommandItem itemWithTitle:@"Show Editor Only" shortcut:@"" action:@selector(showEditorOnly:) target:self],
+        [MPCommandItem itemWithTitle:@"Show Preview Only" shortcut:@"" action:@selector(showPreviewOnly:) target:self],
+        [MPCommandItem itemWithTitle:@"Show Editor & Preview" shortcut:@"" action:@selector(showBothPanes:) target:self],
+        [MPCommandItem itemWithTitle:@"Bold" shortcut:@"\u2318B" action:@selector(toggleStrong:) target:self],
+        [MPCommandItem itemWithTitle:@"Italic" shortcut:@"\u2318I" action:@selector(toggleEmphasis:) target:self],
+        [MPCommandItem itemWithTitle:@"Underline" shortcut:@"\u2318U" action:@selector(toggleUnderline:) target:self],
+        [MPCommandItem itemWithTitle:@"Heading 1" shortcut:@"" action:@selector(convertToH1:) target:self],
+        [MPCommandItem itemWithTitle:@"Heading 2" shortcut:@"" action:@selector(convertToH2:) target:self],
+        [MPCommandItem itemWithTitle:@"Heading 3" shortcut:@"" action:@selector(convertToH3:) target:self],
+        [MPCommandItem itemWithTitle:@"Insert Link" shortcut:@"\u2318K" action:@selector(toggleLink:) target:self],
+        [MPCommandItem itemWithTitle:@"Insert Image" shortcut:@"" action:@selector(toggleImage:) target:self],
+        [MPCommandItem itemWithTitle:@"Code Block" shortcut:@"" action:@selector(toggleInlineCode:) target:self],
+        [MPCommandItem itemWithTitle:@"Blockquote" shortcut:@"" action:@selector(toggleBlockquote:) target:self],
+        [MPCommandItem itemWithTitle:@"Unordered List" shortcut:@"" action:@selector(toggleUnorderedList:) target:self],
+        [MPCommandItem itemWithTitle:@"Ordered List" shortcut:@"" action:@selector(toggleOrderedList:) target:self],
+        [MPCommandItem itemWithTitle:@"Strikethrough" shortcut:@"" action:@selector(toggleStrikethrough:) target:self],
+        [MPCommandItem itemWithTitle:@"Highlight Filler Words" shortcut:@"" action:@selector(toggleProseAnalysis:) target:self],
+        [MPCommandItem itemWithTitle:@"Copy HTML" shortcut:@"\u2325\u2318C" action:@selector(copyHtml:) target:self],
+        [MPCommandItem itemWithTitle:@"Export HTML..." shortcut:@"\u2325\u2318E" action:@selector(exportHtml:) target:self],
+        [MPCommandItem itemWithTitle:@"Export PDF..." shortcut:@"\u2325\u2318P" action:@selector(exportPdf:) target:self],
+        [MPCommandItem itemWithTitle:@"Export DOCX..." shortcut:@"\u2325\u2318D" action:@selector(exportToDOCX:) target:self],
+    ];
+    [MPCommandPalette showForWindow:self.windowForSheet withCommands:commands];
+}
+
+- (IBAction)toggleProseAnalysis:(id)sender
+{
+    NSString *text = self.editor.string;
+    MPProseAnalysis *analysis = [MPProseAnalysis analyzeText:text];
+
+    if (analysis.fillerWordRanges.count == 0)
+    {
+        NSAlert *alert = [[NSAlert alloc] init];
+        alert.messageText = @"Prose Analysis";
+        alert.informativeText = @"No filler words or repeated words found.";
+        [alert runModal];
+        return;
+    }
+
+    // Highlight filler words in the editor with a yellow background
+    NSTextStorage *storage = self.editor.textStorage;
+    [storage beginEditing];
+
+    // Clear previous highlights
+    [storage removeAttribute:NSBackgroundColorAttributeName
+                       range:NSMakeRange(0, text.length)];
+
+    // Highlight filler words in yellow
+    for (NSValue *rangeVal in analysis.fillerWordRanges)
+    {
+        NSRange range = rangeVal.rangeValue;
+        if (NSMaxRange(range) <= text.length)
+            [storage addAttribute:NSBackgroundColorAttributeName
+                            value:[NSColor colorWithRed:1.0 green:1.0 blue:0.6 alpha:0.5]
+                            range:range];
+    }
+
+    // Highlight repeated words in orange
+    for (NSValue *rangeVal in analysis.repeatedWordRanges)
+    {
+        NSRange range = rangeVal.rangeValue;
+        if (NSMaxRange(range) <= text.length)
+            [storage addAttribute:NSBackgroundColorAttributeName
+                            value:[NSColor colorWithRed:1.0 green:0.8 blue:0.4 alpha:0.5]
+                            range:range];
+    }
+
+    [storage endEditing];
+
+    NSString *summary = [NSString stringWithFormat:
+        @"Found %lu filler words and %lu repeated words.\n\nFillers: %@",
+        (unsigned long)analysis.fillerWordRanges.count,
+        (unsigned long)analysis.repeatedWordRanges.count,
+        [analysis.fillerWordsFound componentsJoinedByString:@", "]];
+
+    NSAlert *alert = [[NSAlert alloc] init];
+    alert.messageText = @"Prose Analysis";
+    alert.informativeText = summary;
+    [alert runModal];
 }
 
 - (IBAction)render:(id)sender
