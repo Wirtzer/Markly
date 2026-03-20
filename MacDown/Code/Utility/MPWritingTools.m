@@ -116,29 +116,27 @@ static NSSet *MPFillerWords()
 
     NSSet *fillers = MPFillerWords();
 
-    // Tokenize into words with their ranges
-    NSLinguisticTagger *tagger = [[NSLinguisticTagger alloc]
-        initWithTagSchemes:@[NSLinguisticTagSchemeTokenType]
-                   options:0];
-    tagger.string = text;
+    // Use regex to find word boundaries — simple and reliable
+    static NSRegularExpression *wordRegex = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        wordRegex = [NSRegularExpression regularExpressionWithPattern:@"\\b[a-zA-Z]+\\b"
+                                                              options:0 error:nil];
+    });
 
-    NSString *previousWord = nil;
-    __block NSString *prevWord = nil;
+    NSArray *matches = [wordRegex matchesInString:text options:0
+                                            range:NSMakeRange(0, text.length)];
 
-    [tagger enumerateTagsInRange:NSMakeRange(0, text.length)
-                          scheme:NSLinguisticTagSchemeTokenType
-                         options:NSLinguisticTaggerOmitWhitespace | NSLinguisticTaggerOmitPunctuation
-                      usingBlock:^(NSLinguisticTag tag, NSRange tokenRange, NSRange sentenceRange, BOOL *stop) {
-
-        if (![tag isEqualToString:NSLinguisticTagWord])
-            return;
-
-        NSString *word = [[text substringWithRange:tokenRange] lowercaseString];
+    NSString *prevWord = nil;
+    for (NSTextCheckingResult *match in matches)
+    {
+        NSRange range = match.range;
+        NSString *word = [[text substringWithRange:range] lowercaseString];
 
         // Check filler words
         if ([fillers containsObject:word])
         {
-            [fillerRanges addObject:[NSValue valueWithRange:tokenRange]];
+            [fillerRanges addObject:[NSValue valueWithRange:range]];
             if (![fillerWords containsObject:word])
                 [fillerWords addObject:word];
         }
@@ -146,13 +144,13 @@ static NSSet *MPFillerWords()
         // Check repeated consecutive words
         if (prevWord && [prevWord isEqualToString:word])
         {
-            [repeatedRanges addObject:[NSValue valueWithRange:tokenRange]];
+            [repeatedRanges addObject:[NSValue valueWithRange:range]];
             if (![repeatedWords containsObject:word])
                 [repeatedWords addObject:word];
         }
 
         prevWord = word;
-    }];
+    }
 
     analysis.fillerWordRanges = fillerRanges;
     analysis.fillerWordsFound = fillerWords;
