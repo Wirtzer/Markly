@@ -1220,8 +1220,13 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
     if (self.preferences.editorHighlightFillers)
     {
         html = [MPFillerHighlighter highlightFillersInHTML:html];
-        // Inject CSS for filler highlights
-        NSString *fillerCSS = @"<style>mark.filler{background:#fff59d;padding:1px 2px;border-radius:2px;}</style>";
+        // Inject CSS for categorized highlights
+        NSString *fillerCSS = @"<style>"
+            @"mark.weasel-qual{background:#fff59d;padding:1px 2px;border-radius:2px;}"     // yellow — qualifiers
+            @"mark.weasel-weasel{background:#ffcc80;padding:1px 2px;border-radius:2px;}"   // orange — weasel words
+            @"mark.weasel-indirect{background:#f8bbd0;padding:1px 2px;border-radius:2px;}" // pink — indirect
+            @"mark.weasel-adverb{background:#bbdefb;padding:1px 2px;border-radius:2px;}"   // blue — adverbs
+            @"</style>";
         NSRange headEnd = [html rangeOfString:@"</head>" options:NSCaseInsensitiveSearch];
         if (headEnd.location != NSNotFound)
             html = [html stringByReplacingCharactersInRange:headEnd
@@ -1777,43 +1782,45 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
     NSLayoutManager *lm = self.editor.layoutManager;
     NSRange fullRange = NSMakeRange(0, text.length);
 
-    // Clear previous highlights
     [lm removeTemporaryAttribute:NSBackgroundColorAttributeName
                 forCharacterRange:fullRange];
 
     if (text.length == 0)
     {
-        self.fillerCountLabel.stringValue = @"0 fillers";
+        self.fillerCountLabel.stringValue = @"0 issues";
         return;
     }
 
     MPProseAnalysis *analysis = [MPProseAnalysis analyzeText:text];
 
-    NSColor *fillerColor = [NSColor colorWithRed:1.0 green:0.95 blue:0.4 alpha:0.45];
-    NSColor *repeatColor = [NSColor colorWithRed:1.0 green:0.7 blue:0.3 alpha:0.45];
+    // Color per category
+    NSColor *qualifierColor = [NSColor colorWithRed:1.0 green:0.95 blue:0.4 alpha:0.45];  // yellow
+    NSColor *weaselColor    = [NSColor colorWithRed:1.0 green:0.7 blue:0.3 alpha:0.45];   // orange
+    NSColor *indirectColor  = [NSColor colorWithRed:1.0 green:0.75 blue:0.85 alpha:0.5];  // pink
+    NSColor *adverbColor    = [NSColor colorWithRed:0.7 green:0.85 blue:1.0 alpha:0.5];   // blue
+    NSColor *repeatColor    = [NSColor colorWithRed:1.0 green:0.5 blue:0.5 alpha:0.4];    // red
 
-    // Highlight filler words
-    for (NSValue *rangeVal in analysis.fillerWordRanges)
+    for (MPWordIssue *issue in analysis.issues)
     {
-        NSRange range = rangeVal.rangeValue;
-        if (NSMaxRange(range) <= text.length)
-            [lm addTemporaryAttribute:NSBackgroundColorAttributeName
-                                value:fillerColor
-                    forCharacterRange:range];
+        if (NSMaxRange(issue.range) > text.length) continue;
+
+        NSColor *color;
+        switch (issue.type) {
+            case MPWordIssueQualifier: color = qualifierColor; break;
+            case MPWordIssueWeasel:    color = weaselColor; break;
+            case MPWordIssueIndirect:  color = indirectColor; break;
+            case MPWordIssueAdverb:    color = adverbColor; break;
+            case MPWordIssueRepeated:  color = repeatColor; break;
+            default: color = qualifierColor; break;
+        }
+
+        [lm addTemporaryAttribute:NSBackgroundColorAttributeName
+                            value:color
+                forCharacterRange:issue.range];
     }
 
-    // Highlight repeated consecutive words
-    for (NSValue *rangeVal in analysis.repeatedWordRanges)
-    {
-        NSRange range = rangeVal.rangeValue;
-        if (NSMaxRange(range) <= text.length)
-            [lm addTemporaryAttribute:NSBackgroundColorAttributeName
-                                value:repeatColor
-                    forCharacterRange:range];
-    }
-
-    NSUInteger total = analysis.fillerWordRanges.count + analysis.repeatedWordRanges.count;
-    self.fillerCountLabel.stringValue = [NSString stringWithFormat:@"%lu fillers", (unsigned long)total];
+    NSUInteger total = analysis.issues.count;
+    self.fillerCountLabel.stringValue = [NSString stringWithFormat:@"%lu issues", (unsigned long)total];
 }
 
 - (void)clearFillerHighlights
