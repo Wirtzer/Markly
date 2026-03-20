@@ -20,6 +20,14 @@ static CGFloat const kPaletteMaxVisibleRows = 12;
     item.shortcut = shortcut;
     item.action = action;
     item.target = target;
+    item.isOn = NO;
+    return item;
+}
+
++ (MPCommandItem *)toggleWithTitle:(NSString *)title shortcut:(NSString *)shortcut action:(SEL)action target:(id)target isOn:(BOOL)isOn
+{
+    MPCommandItem *item = [self itemWithTitle:title shortcut:shortcut action:action target:target];
+    item.isOn = isOn;
     return item;
 }
 
@@ -217,7 +225,8 @@ static CGFloat const kPaletteMaxVisibleRows = 12;
 
     if ([identifier isEqualToString:@"title"])
     {
-        cell.textField.stringValue = cmd.title;
+        NSString *prefix = cmd.isOn ? @"\u2713  " : @"";
+        cell.textField.stringValue = [prefix stringByAppendingString:cmd.title];
         cell.textField.font = [NSFont systemFontOfSize:13];
     }
     else

@@ -745,6 +745,18 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
         NSLocalizedString(@"Restore Editor Pane",
                           @"Toggle editor pane menu item");
     }
+    else if (action == @selector(toggleFocusMode:))
+    {
+        ((NSMenuItem *)item).state = self.preferences.editorFocusMode ? NSOnState : NSOffState;
+    }
+    else if (action == @selector(toggleTypewriterMode:))
+    {
+        ((NSMenuItem *)item).state = self.preferences.editorTypewriterMode ? NSOnState : NSOffState;
+    }
+    else if (action == @selector(toggleSidebar:))
+    {
+        ((NSMenuItem *)item).state = self.sidebarController.sidebarVisible ? NSOnState : NSOffState;
+    }
     return result;
 }
 
@@ -1667,9 +1679,9 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
 - (IBAction)showCommandPalette:(id)sender
 {
     NSArray *commands = @[
-        [MPCommandItem itemWithTitle:@"Toggle Sidebar" shortcut:@"\u2325\u2318S" action:@selector(toggleSidebar:) target:self],
-        [MPCommandItem itemWithTitle:@"Focus Mode" shortcut:@"\u2325\u2318F" action:@selector(toggleFocusMode:) target:self],
-        [MPCommandItem itemWithTitle:@"Typewriter Mode" shortcut:@"\u21E7\u2318T" action:@selector(toggleTypewriterMode:) target:self],
+        [MPCommandItem toggleWithTitle:@"Toggle Sidebar" shortcut:@"\u2325\u2318S" action:@selector(toggleSidebar:) target:self isOn:self.sidebarController.sidebarVisible],
+        [MPCommandItem toggleWithTitle:@"Focus Mode" shortcut:@"\u2325\u2318F" action:@selector(toggleFocusMode:) target:self isOn:self.preferences.editorFocusMode],
+        [MPCommandItem toggleWithTitle:@"Typewriter Mode" shortcut:@"\u21E7\u2318T" action:@selector(toggleTypewriterMode:) target:self isOn:self.preferences.editorTypewriterMode],
         [MPCommandItem itemWithTitle:@"Show Editor Only" shortcut:@"" action:@selector(showEditorOnly:) target:self],
         [MPCommandItem itemWithTitle:@"Show Preview Only" shortcut:@"" action:@selector(showPreviewOnly:) target:self],
         [MPCommandItem itemWithTitle:@"Show Editor & Preview" shortcut:@"" action:@selector(showBothPanes:) target:self],
