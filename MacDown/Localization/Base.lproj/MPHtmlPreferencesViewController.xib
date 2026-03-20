@@ -114,9 +114,9 @@
                         <binding destination="-2" name="enabled" keyPath="self.preferences.htmlSyntaxHighlighting" id="zSJ-H9-kjZ"/>
                     </connections>
                 </button>
-                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Qe1-sK-Yxe">
-                    <rect key="frame" x="130" y="178" width="85" height="18"/>
-                    <buttonCell key="cell" type="check" title="Graphviz" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="Lnj-HG-QHi">
+                <button translatesAutoresizingMaskIntoConstraints="NO" id="Qe1-sK-Yxe">
+                    <rect key="frame" x="106" y="133" width="281" height="18"/>
+                    <buttonCell key="cell" type="check" title="Graphviz diagrams" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="Lnj-HG-QHi">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
@@ -124,9 +124,9 @@
                         <binding destination="-2" name="value" keyPath="self.preferences.htmlGraphviz" id="28T-6A-JOn"/>
                     </connections>
                 </button>
-                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="bWg-uC-6W8">
-                    <rect key="frame" x="220" y="178" width="85" height="18"/>
-                    <buttonCell key="cell" type="check" title="Mermaid" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="bda-Ft-ecb">
+                <button translatesAutoresizingMaskIntoConstraints="NO" id="bWg-uC-6W8">
+                    <rect key="frame" x="106" y="113" width="281" height="18"/>
+                    <buttonCell key="cell" type="check" title="Mermaid diagrams" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="bda-Ft-ecb">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
@@ -164,7 +164,7 @@
                     </connections>
                 </button>
                 <button translatesAutoresizingMaskIntoConstraints="NO" id="P7Z-ag-nPR">
-                    <rect key="frame" x="106" y="133" width="281" height="18"/>
+                    <rect key="frame" x="106" y="93" width="281" height="18"/>
                     <buttonCell key="cell" type="check" title="Task list syntax" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="kBf-iW-HlH">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" metaFont="system"/>
@@ -174,7 +174,7 @@
                     </connections>
                 </button>
                 <button translatesAutoresizingMaskIntoConstraints="NO" id="hfI-Rf-3Cr">
-                    <rect key="frame" x="106" y="113" width="281" height="18"/>
+                    <rect key="frame" x="106" y="73" width="281" height="18"/>
                     <buttonCell key="cell" type="check" title="Detect Jekyll front-matter" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="iXi-Pv-mFl">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" metaFont="system"/>
@@ -184,7 +184,7 @@
                     </connections>
                 </button>
                 <button translatesAutoresizingMaskIntoConstraints="NO" id="6BB-rh-ZwZ">
-                    <rect key="frame" x="106" y="93" width="281" height="18"/>
+                    <rect key="frame" x="106" y="53" width="281" height="18"/>
                     <buttonCell key="cell" type="check" title="Detect table of contents token" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="nvS-dZ-eHT">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" metaFont="system"/>
@@ -194,7 +194,7 @@
                     </connections>
                 </button>
                 <button translatesAutoresizingMaskIntoConstraints="NO" id="lxX-Pm-dhn">
-                    <rect key="frame" x="106" y="73" width="281" height="18"/>
+                    <rect key="frame" x="106" y="33" width="281" height="18"/>
                     <buttonCell key="cell" type="check" title="Render newline literally" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="Sty-qG-J6K">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" metaFont="system"/>
@@ -204,7 +204,7 @@
                     </connections>
                 </button>
                 <button translatesAutoresizingMaskIntoConstraints="NO" id="RCL-iK-kgx">
-                    <rect key="frame" x="106" y="53" width="281" height="18"/>
+                    <rect key="frame" x="106" y="13" width="281" height="18"/>
                     <buttonCell key="cell" type="check" title="Scale preview based on editor font size" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="aWw-Wb-pBl">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" metaFont="system"/>
