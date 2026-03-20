@@ -135,6 +135,12 @@
                                                 <action selector="exportPdf:" target="-1" id="Rhh-ni-CdX"/>
                                             </connections>
                                         </menuItem>
+                                        <menuItem title="Word Document (DOCX)…" keyEquivalent="d" id="RD0-dx-Exp">
+                                            <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                            <connections>
+                                                <action selector="exportToDOCX:" target="-1" id="RD0-dx-Act"/>
+                                            </connections>
+                                        </menuItem>
                                     </items>
                                 </menu>
                             </menuItem>
@@ -393,6 +399,18 @@
                                 <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
                                 <connections>
                                     <action selector="toggleSidebar:" target="-1" id="RD0-sb-Act"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Focus Mode" keyEquivalent="f" id="RD0-fm-Tgl">
+                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                <connections>
+                                    <action selector="toggleFocusMode:" target="-1" id="RD0-fm-Act"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Typewriter Mode" keyEquivalent="t" id="RD0-tw-Tgl">
+                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                <connections>
+                                    <action selector="toggleTypewriterMode:" target="-1" id="RD0-tw-Act"/>
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="RD0-sb-Sep"/>

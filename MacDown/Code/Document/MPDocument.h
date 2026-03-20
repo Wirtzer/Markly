@@ -23,5 +23,8 @@
 - (IBAction)showPreviewOnly:(id)sender;
 - (IBAction)showBothPanes:(id)sender;
 - (IBAction)toggleSidebar:(id)sender;
+- (IBAction)toggleFocusMode:(id)sender;
+- (IBAction)toggleTypewriterMode:(id)sender;
+- (IBAction)exportToDOCX:(id)sender;
 
 @end

@@ -508,6 +508,10 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
             [self showEditorOnly:nil];
         else if (viewMode == 2)
             [self showPreviewOnly:nil];
+
+        // Apply focus/typewriter mode from preferences
+        self.editor.focusModeEnabled = self.preferences.editorFocusMode;
+        self.editor.typewriterModeEnabled = self.preferences.editorTypewriterMode;
     }];
 }
 
@@ -1583,6 +1587,64 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
     [self.sidebarController toggleSidebar];
 }
 
+- (IBAction)toggleFocusMode:(id)sender
+{
+    BOOL newValue = !self.preferences.editorFocusMode;
+    self.preferences.editorFocusMode = newValue;
+    self.editor.focusModeEnabled = newValue;
+}
+
+- (IBAction)toggleTypewriterMode:(id)sender
+{
+    BOOL newValue = !self.preferences.editorTypewriterMode;
+    self.preferences.editorTypewriterMode = newValue;
+    self.editor.typewriterModeEnabled = newValue;
+}
+
+- (IBAction)exportToDOCX:(id)sender
+{
+    NSSavePanel *panel = [NSSavePanel savePanel];
+    panel.allowedFileTypes = @[@"docx"];
+    panel.nameFieldStringValue = [[self.fileURL.lastPathComponent stringByDeletingPathExtension]
+        stringByAppendingPathExtension:@"docx"] ?: @"Untitled.docx";
+
+    [panel beginSheetModalForWindow:self.windowForSheet completionHandler:^(NSModalResponse result) {
+        if (result != NSModalResponseOK)
+            return;
+
+        // Get the rendered HTML and convert to attributed string, then to DOCX
+        NSString *html = self.renderer.currentHtml;
+        if (!html)
+            return;
+
+        NSData *htmlData = [html dataUsingEncoding:NSUTF8StringEncoding];
+        NSAttributedString *attrStr = [[NSAttributedString alloc]
+            initWithHTML:htmlData
+            baseURL:self.fileURL
+            documentAttributes:nil];
+
+        if (!attrStr)
+            return;
+
+        NSDictionary *docAttrs = @{
+            NSDocumentTypeDocumentAttribute: NSOfficeOpenXMLTextDocumentType,
+        };
+        NSError *error = nil;
+        NSFileWrapper *wrapper = [attrStr fileWrapperFromRange:NSMakeRange(0, attrStr.length)
+                                            documentAttributes:docAttrs
+                                                         error:&error];
+        if (wrapper && !error)
+            [wrapper writeToURL:panel.URL options:NSFileWrapperWritingAtomic
+                originalContentsURL:nil error:&error];
+
+        if (error)
+        {
+            NSAlert *alert = [NSAlert alertWithError:error];
+            [alert runModal];
+        }
+    }];
+}
+
 - (void)sidebarDidSelectHeading:(NSNotification *)notification
 {
     NSRange range = [notification.userInfo[@"range"] rangeValue];
@@ -2009,6 +2071,63 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
     self.totalWords = count.words;
     self.totalCharacters = count.characters;
     self.totalCharactersNoSpaces = count.characterWithoutSpaces;
+
+    // Update reading time and readability in word count menu
+    if (count.words > 0)
+    {
+        NSUInteger minutes = count.words / 200; // avg 200 wpm reading speed
+        NSUInteger seconds = (count.words % 200) * 60 / 200;
+        NSString *readingTime;
+        if (minutes > 0)
+            readingTime = [NSString stringWithFormat:@"~%lu min read", (unsigned long)minutes];
+        else
+            readingTime = [NSString stringWithFormat:@"~%lu sec read", (unsigned long)seconds];
+
+        // Flesch-Kincaid readability (approximate from word/sentence ratio)
+        NSString *text = self.editor.string;
+        NSUInteger sentenceCount = 0;
+        NSArray *sentenceEnders = @[@".", @"!", @"?"];
+        for (NSString *ender in sentenceEnders)
+        {
+            NSUInteger searchFrom = 0;
+            while (searchFrom < text.length)
+            {
+                NSRange r = [text rangeOfString:ender
+                                        options:0
+                                          range:NSMakeRange(searchFrom, text.length - searchFrom)];
+                if (r.location == NSNotFound) break;
+                sentenceCount++;
+                searchFrom = r.location + 1;
+            }
+        }
+        if (sentenceCount == 0) sentenceCount = 1;
+
+        CGFloat avgWordsPerSentence = (CGFloat)count.words / sentenceCount;
+        // Simplified Flesch Reading Ease (without syllable count)
+        // Uses Coleman-Liau approximation: characters per word as proxy
+        CGFloat avgCharsPerWord = (CGFloat)count.characterWithoutSpaces / count.words;
+        CGFloat readability = 206.835 - (1.015 * avgWordsPerSentence) - (84.6 * (avgCharsPerWord / 4.5));
+        readability = MAX(0, MIN(100, readability));
+
+        NSString *level;
+        if (readability >= 80) level = @"Easy";
+        else if (readability >= 60) level = @"Standard";
+        else if (readability >= 40) level = @"Moderate";
+        else level = @"Complex";
+
+        // Add stats items if not already present
+        NSMenu *menu = self.wordCountWidget.menu;
+        while (menu.numberOfItems > 3)
+            [menu removeItemAtIndex:menu.numberOfItems - 1];
+
+        [menu addItem:[NSMenuItem separatorItem]];
+        NSMenuItem *timeItem = [[NSMenuItem alloc] initWithTitle:readingTime action:NULL keyEquivalent:@""];
+        [menu addItem:timeItem];
+        NSMenuItem *readabilityItem = [[NSMenuItem alloc] initWithTitle:
+            [NSString stringWithFormat:@"%@ (%.0f)", level, readability]
+            action:NULL keyEquivalent:@""];
+        [menu addItem:readabilityItem];
+    }
 
     if (self.isPreviewReady)
         self.wordCountWidget.enabled = YES;

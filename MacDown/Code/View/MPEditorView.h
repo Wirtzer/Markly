@@ -11,6 +11,9 @@
 @interface MPEditorView : NSTextView
 
 @property BOOL scrollsPastEnd;
+@property BOOL focusModeEnabled;
+@property BOOL typewriterModeEnabled;
 - (NSRect)contentRect;
+- (void)updateFocusMode;
 
 @end

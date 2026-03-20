@@ -22,6 +22,8 @@ extern NSString * const MPDidDetectFreshInstallationNotification;
 @property (assign) NSInteger defaultViewMode; // 0=Both, 1=Editor Only, 2=Preview Only
 @property (assign) NSInteger openedFileViewMode; // View mode for existing files: 0=Both, 1=Editor, 2=Preview
 @property (assign) BOOL rememberViewModePerFile; // Remember per-file view mode
+@property (assign) BOOL editorFocusMode; // Focus mode: dim non-active paragraph
+@property (assign) BOOL editorTypewriterMode; // Typewriter mode: keep cursor centered
 
 // Extension flags.
 @property (assign) BOOL extensionIntraEmphasis;

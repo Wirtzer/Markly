@@ -31,6 +31,8 @@ NS_INLINE BOOL MPAreRectsEqual(NSRect r1, NSRect r2)
 
 @synthesize contentRect = _contentRect;
 @synthesize scrollsPastEnd = _scrollsPastEnd;
+@synthesize focusModeEnabled = _focusModeEnabled;
+@synthesize typewriterModeEnabled = _typewriterModeEnabled;
 
 - (BOOL)scrollsPastEnd
 {
@@ -176,6 +178,17 @@ NS_INLINE BOOL MPAreRectsEqual(NSRect r1, NSRect r2)
     [super didChangeText];
     if (self.scrollsPastEnd)
         [self updateContentGeometry];
+    if (self.focusModeEnabled)
+        [self updateFocusMode];
+}
+
+- (void)setSelectedRange:(NSRange)charRange affinity:(NSSelectionAffinity)affinity stillSelecting:(BOOL)stillSelectingFlag
+{
+    [super setSelectedRange:charRange affinity:affinity stillSelecting:stillSelectingFlag];
+    if (self.focusModeEnabled)
+        [self updateFocusMode];
+    if (self.typewriterModeEnabled && !stillSelectingFlag)
+        [self scrollCursorToCenter];
 }
 
 
@@ -215,6 +228,89 @@ NS_INLINE BOOL MPAreRectsEqual(NSRect r1, NSRect r2)
     self.contentRect = r;
 
     [self setFrameSize:self.frame.size];    // Force size update.
+}
+
+
+#pragma mark - Focus Mode
+
+- (void)setFocusModeEnabled:(BOOL)enabled
+{
+    _focusModeEnabled = enabled;
+    if (enabled)
+        [self updateFocusMode];
+    else
+        [self clearFocusDimming];
+}
+
+- (void)updateFocusMode
+{
+    if (!self.focusModeEnabled)
+        return;
+
+    NSString *text = self.string;
+    if (text.length == 0)
+        return;
+
+    NSRange selectedRange = self.selectedRange;
+    if (selectedRange.location > text.length)
+        return;
+
+    // Find the current paragraph range
+    NSRange paragraphRange = [text paragraphRangeForRange:NSMakeRange(selectedRange.location, 0)];
+
+    // Dim everything, then un-dim the active paragraph
+    NSColor *baseColor = self.textColor;
+    if (!baseColor) baseColor = [NSColor textColor];
+    NSColor *dimColor = [baseColor colorWithAlphaComponent:0.3];
+    NSColor *activeColor = baseColor;
+
+    NSTextStorage *storage = self.textStorage;
+    [storage beginEditing];
+    [storage addAttribute:NSForegroundColorAttributeName value:dimColor
+                    range:NSMakeRange(0, text.length)];
+    [storage addAttribute:NSForegroundColorAttributeName value:activeColor
+                    range:paragraphRange];
+    [storage endEditing];
+}
+
+- (void)clearFocusDimming
+{
+    NSString *text = self.string;
+    if (text.length == 0)
+        return;
+
+    NSColor *normalColor = self.textColor;
+    if (!normalColor) normalColor = [NSColor textColor];
+    NSTextStorage *storage = self.textStorage;
+    [storage beginEditing];
+    [storage addAttribute:NSForegroundColorAttributeName value:normalColor
+                    range:NSMakeRange(0, text.length)];
+    [storage endEditing];
+}
+
+
+#pragma mark - Typewriter Mode
+
+- (void)scrollCursorToCenter
+{
+    NSRange range = self.selectedRange;
+    if (range.location == NSNotFound || self.string.length == 0)
+        return;
+
+    NSLayoutManager *lm = self.layoutManager;
+    NSUInteger glyphIndex = [lm glyphIndexForCharacterAtIndex:
+        MIN(range.location, self.string.length - 1)];
+    NSRect lineRect = [lm lineFragmentRectForGlyphAtIndex:glyphIndex
+                                           effectiveRange:NULL];
+
+    CGFloat cursorY = lineRect.origin.y + lineRect.size.height / 2.0;
+    CGFloat visibleHeight = self.enclosingScrollView.contentSize.height;
+    CGFloat scrollY = cursorY - visibleHeight / 2.0;
+    if (scrollY < 0) scrollY = 0;
+
+    NSPoint scrollPoint = NSMakePoint(0, scrollY);
+    [self.enclosingScrollView.contentView scrollToPoint:scrollPoint];
+    [self.enclosingScrollView reflectScrolledClipView:self.enclosingScrollView.contentView];
 }
 
 @end
