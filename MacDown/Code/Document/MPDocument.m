@@ -1235,6 +1235,18 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
             html = [fillerCSS stringByAppendingString:html];
     }
 
+    // Inject WikiLink CSS for all documents
+    NSString *wikiCSS = @"<style>"
+        @"a.wikilink{color:#0366d6;border-bottom:1px dashed #0366d6;text-decoration:none;}"
+        @"a.wikilink-new{color:#cb2431;border-bottom:1px dashed #cb2431;}"
+        @"</style>";
+    NSRange headEnd2 = [html rangeOfString:@"</head>" options:NSCaseInsensitiveSearch];
+    if (headEnd2.location != NSNotFound)
+        html = [html stringByReplacingCharactersInRange:headEnd2
+                withString:[wikiCSS stringByAppendingString:@"</head>"]];
+    else
+        html = [wikiCSS stringByAppendingString:html];
+
     // Reload the page if there's not valid tree to work with.
     [self.preview.mainFrame loadHTMLString:html baseURL:baseUrl];
     self.currentBaseUrl = baseUrl;

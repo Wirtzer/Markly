@@ -58,7 +58,8 @@
         }
         else
         {
-            link = [NSString stringWithFormat:@"<a href=\"%@\" class=\"wikilink\">%@</a>",
+            // No base URL (unsaved doc) — mark as missing
+            link = [NSString stringWithFormat:@"<a href=\"%@\" class=\"wikilink wikilink-new\">%@</a>",
                     filename, display];
         }
 
