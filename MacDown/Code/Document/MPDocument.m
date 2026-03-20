@@ -465,10 +465,8 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
     // Create filler word count popup in the bottom-right corner
     NSView *editorContainer = self.editorContainer;
     self.fillerCountButton = [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:YES];
-    self.fillerCountButton.font = [NSFont systemFontOfSize:10];
-    self.fillerCountButton.controlSize = NSControlSizeMini;
-    self.fillerCountButton.bezelStyle = NSBezelStyleInline;
-    self.fillerCountButton.bordered = NO;
+    self.fillerCountButton.font = [NSFont monospacedDigitSystemFontOfSize:11 weight:NSFontWeightMedium];
+    self.fillerCountButton.controlSize = NSControlSizeSmall;
     self.fillerCountButton.translatesAutoresizingMaskIntoConstraints = NO;
     self.fillerCountButton.hidden = !self.preferences.editorHighlightFillers;
     [self.fillerCountButton addItemWithTitle:@"0 issues"];
@@ -1819,35 +1817,47 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
                 forCharacterRange:issue.range];
     }
 
-    // Populate the dropdown with per-category breakdown
+    // Populate the dropdown with per-category breakdown using colored dots
     NSUInteger total = analysis.issues.count;
     [self.fillerCountButton removeAllItems];
-    [self.fillerCountButton addItemWithTitle:[NSString stringWithFormat:@"%lu issues", (unsigned long)total]];
 
-    if (analysis.qualifierCount > 0)
+    // Title item (shown in the button)
+    NSString *titleStr = [NSString stringWithFormat:@"\u26A0 %lu issues", (unsigned long)total];
+    [self.fillerCountButton addItemWithTitle:titleStr];
+
+    struct { NSUInteger count; NSString *label; NSColor *color; } rows[] = {
+        { analysis.qualifierCount, @"qualifiers",    [NSColor colorWithRed:0.9 green:0.85 blue:0.0 alpha:1.0] },
+        { analysis.weaselCount,    @"weasel words",  [NSColor orangeColor] },
+        { analysis.indirectCount,  @"indirect/vague",[NSColor colorWithRed:0.9 green:0.4 blue:0.6 alpha:1.0] },
+        { analysis.adverbCount,    @"weak adverbs",  [NSColor colorWithRed:0.3 green:0.5 blue:0.9 alpha:1.0] },
+        { analysis.repeatedCount,  @"repeated words",[NSColor colorWithRed:0.9 green:0.3 blue:0.3 alpha:1.0] },
+    };
+
+    for (int i = 0; i < 5; i++)
     {
-        NSString *title = [NSString stringWithFormat:@"\u25CF  %lu qualifiers (yellow)", (unsigned long)analysis.qualifierCount];
-        [self.fillerCountButton addItemWithTitle:title];
-    }
-    if (analysis.weaselCount > 0)
-    {
-        NSString *title = [NSString stringWithFormat:@"\u25CF  %lu weasel words (orange)", (unsigned long)analysis.weaselCount];
-        [self.fillerCountButton addItemWithTitle:title];
-    }
-    if (analysis.indirectCount > 0)
-    {
-        NSString *title = [NSString stringWithFormat:@"\u25CF  %lu indirect/vague (pink)", (unsigned long)analysis.indirectCount];
-        [self.fillerCountButton addItemWithTitle:title];
-    }
-    if (analysis.adverbCount > 0)
-    {
-        NSString *title = [NSString stringWithFormat:@"\u25CF  %lu weak adverbs (blue)", (unsigned long)analysis.adverbCount];
-        [self.fillerCountButton addItemWithTitle:title];
-    }
-    if (analysis.repeatedCount > 0)
-    {
-        NSString *title = [NSString stringWithFormat:@"\u25CF  %lu repeated words (red)", (unsigned long)analysis.repeatedCount];
-        [self.fillerCountButton addItemWithTitle:title];
+        if (rows[i].count == 0) continue;
+
+        NSString *text = [NSString stringWithFormat:@"%lu %@", (unsigned long)rows[i].count, rows[i].label];
+
+        // Create attributed title with a colored dot
+        NSMutableAttributedString *attr = [[NSMutableAttributedString alloc] init];
+
+        // Colored dot
+        NSDictionary *dotAttrs = @{
+            NSForegroundColorAttributeName: rows[i].color,
+            NSFontAttributeName: [NSFont systemFontOfSize:14],
+        };
+        [attr appendAttributedString:[[NSAttributedString alloc] initWithString:@"\u25CF " attributes:dotAttrs]];
+
+        // Label text
+        NSDictionary *textAttrs = @{
+            NSForegroundColorAttributeName: [NSColor labelColor],
+            NSFontAttributeName: [NSFont systemFontOfSize:12],
+        };
+        [attr appendAttributedString:[[NSAttributedString alloc] initWithString:text attributes:textAttrs]];
+
+        [self.fillerCountButton addItemWithTitle:@""];
+        self.fillerCountButton.lastItem.attributedTitle = attr;
     }
 }
 
