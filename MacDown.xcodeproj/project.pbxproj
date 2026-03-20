@@ -311,8 +311,8 @@
 		1F847BC31DCC9DA800A47385 /* MPGlobals.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPGlobals.h; sourceTree = "<group>"; };
 		1F847BC41DCC9DB600A47385 /* NSUserDefaults+Suite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSUserDefaults+Suite.h"; sourceTree = "<group>"; };
 		1F847BC51DCC9DB600A47385 /* NSUserDefaults+Suite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSUserDefaults+Suite.m"; sourceTree = "<group>"; };
-		1F8858BA1A2D8D82008DC543 /* MPArgumentProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MPArgumentProcessor.h; path = "macdown-cmd/MPArgumentProcessor.h"; sourceTree = SOURCE_ROOT; };
-		1F8858BB1A2D8D82008DC543 /* MPArgumentProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MPArgumentProcessor.m; path = "macdown-cmd/MPArgumentProcessor.m"; sourceTree = SOURCE_ROOT; };
+		1F8858BA1A2D8D82008DC543 /* MPArgumentProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MPArgumentProcessor.h; path = "markly-cmd/MPArgumentProcessor.h"; sourceTree = SOURCE_ROOT; };
+		1F8858BB1A2D8D82008DC543 /* MPArgumentProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MPArgumentProcessor.m; path = "markly-cmd/MPArgumentProcessor.m"; sourceTree = SOURCE_ROOT; };
 		1F8A82D819533E9300B6BF69 /* Prism */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Prism; path = Resources/Prism; sourceTree = "<group>"; };
 		1F8A83571953454F00B6BF69 /* HGMarkdownHighlighter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HGMarkdownHighlighter.h; path = "Dependency/peg-markdown-highlight/HGMarkdownHighlighter.h"; sourceTree = SOURCE_ROOT; };
 		1F8A83581953454F00B6BF69 /* HGMarkdownHighlighter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HGMarkdownHighlighter.m; path = "Dependency/peg-markdown-highlight/HGMarkdownHighlighter.m"; sourceTree = SOURCE_ROOT; };
@@ -439,8 +439,8 @@
 		1FBDFE9B196170FE00BEEA70 /* Extensions */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Extensions; path = Resources/Extensions; sourceTree = "<group>"; };
 		1FBDFE9E1962A25A00BEEA70 /* MPGeneralPreferencesViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPGeneralPreferencesViewController.h; sourceTree = "<group>"; };
 		1FBDFE9F1962A25A00BEEA70 /* MPGeneralPreferencesViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPGeneralPreferencesViewController.m; sourceTree = "<group>"; };
-		1FBDFEA41962A27300BEEA70 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = MacDown/Localization/Base.lproj/MPGeneralPreferencesViewController.xib; sourceTree = SOURCE_ROOT; };
-		1FBE8E0E1A11DB1E003E1EF4 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = "macdown-cmd/main.m"; sourceTree = SOURCE_ROOT; };
+		1FBDFEA41962A27300BEEA70 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Markly/Localization/Base.lproj/MPGeneralPreferencesViewController.xib; sourceTree = SOURCE_ROOT; };
+		1FBE8E0E1A11DB1E003E1EF4 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = "markly-cmd/main.m"; sourceTree = SOURCE_ROOT; };
 		1FC29F5B1944FC2600D616C7 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		1FCBDF0B1E536C8400C0F56B /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = Localization/sv.lproj/MainMenu.strings; sourceTree = "<group>"; };
 		1FCBDF0C1E536C8400C0F56B /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = Localization/sv.lproj/MPExportPanelAccessoryViewController.strings; sourceTree = "<group>"; };
@@ -715,7 +715,7 @@
 				1FFEB32819737D6E00B2254F /* YAML-framework */,
 			);
 			name = Dependency;
-			path = MacDown;
+			path = Markly;
 			sourceTree = "<group>";
 		};
 		1F8A83561953453A00B6BF69 /* peg-markdown-highlight */ = {
@@ -837,7 +837,7 @@
 				1F0D9D90194AC852008E1856 /* Document */,
 				1FCDCA2D1944F8F600B1F966 /* Supporting Files */,
 			);
-			path = MacDown;
+			path = Markly;
 			sourceTree = "<group>";
 		};
 		1FCDCA2D1944F8F600B1F966 /* Supporting Files */ = {
@@ -864,7 +864,7 @@
 				1FFEB3261972DAB400B2254F /* MPHTMLTabularizeTests.m */,
 				1FCDCA371944F97800B1F966 /* Supporting Files */,
 			);
-			path = MacDownTests;
+			path = MarklyTests;
 			sourceTree = "<group>";
 		};
 		1FCDCA371944F97800B1F966 /* Supporting Files */ = {
@@ -897,7 +897,7 @@
 				1F8858BB1A2D8D82008DC543 /* MPArgumentProcessor.m */,
 				1FBE8E0E1A11DB1E003E1EF4 /* main.m */,
 			);
-			path = "macdown-cmd";
+			path = "markly-cmd";
 			sourceTree = "<group>";
 		};
 		AC6D1A361B8B63012D598BC7 /* Pods */ = {
@@ -1773,8 +1773,8 @@
 				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "MacDown/Code/MacDown-Prefix.pch";
-				INFOPLIST_FILE = "MacDown/MacDown-Info.plist";
+				GCC_PREFIX_HEADER = "Markly/Code/MacDown-Prefix.pch";
+				INFOPLIST_FILE = "Markly/MacDown-Info.plist";
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.markly.app-debug";
 				PRODUCT_NAME = Markly;
@@ -1791,8 +1791,8 @@
 				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "MacDown/Code/MacDown-Prefix.pch";
-				INFOPLIST_FILE = "MacDown/MacDown-Info.plist";
+				GCC_PREFIX_HEADER = "Markly/Code/MacDown-Prefix.pch";
+				INFOPLIST_FILE = "Markly/MacDown-Info.plist";
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.markly.app";
 				PRODUCT_NAME = Markly;
@@ -1813,12 +1813,12 @@
 					"$(inherited)",
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "MacDown/Code/MacDown-Prefix.pch";
+				GCC_PREFIX_HEADER = "Markly/Code/MacDown-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
 				);
-				INFOPLIST_FILE = "MacDownTests/MacDownTests-Info.plist";
+				INFOPLIST_FILE = "MarklyTests/MacDownTests-Info.plist";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/MacDown-ggdtxvuybojeqbhjydkhilziizrv/Build/Products/Debug",
@@ -1843,8 +1843,8 @@
 					"$(inherited)",
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "MacDown/Code/MacDown-Prefix.pch";
-				INFOPLIST_FILE = "MacDownTests/MacDownTests-Info.plist";
+				GCC_PREFIX_HEADER = "Markly/Code/MacDown-Prefix.pch";
+				INFOPLIST_FILE = "MarklyTests/MacDownTests-Info.plist";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/MacDown-ggdtxvuybojeqbhjydkhilziizrv/Build/Products/Debug",
