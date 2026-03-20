@@ -414,7 +414,7 @@
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="RD0-p3-Sep"/>
-                            <menuItem title="Command Palette" keyEquivalent="P" id="RD0-cp-Tgl">
+                            <menuItem title="Command Palette" keyEquivalent="K" id="RD0-cp-Tgl">
                                 <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
                                 <connections>
                                     <action selector="showCommandPalette:" target="-1" id="RD0-cp-Act"/>

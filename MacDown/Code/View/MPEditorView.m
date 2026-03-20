@@ -258,19 +258,20 @@ NS_INLINE BOOL MPAreRectsEqual(NSRect r1, NSRect r2)
     // Find the current paragraph range
     NSRange paragraphRange = [text paragraphRangeForRange:NSMakeRange(selectedRange.location, 0)];
 
-    // Dim everything, then un-dim the active paragraph
-    NSColor *baseColor = self.textColor;
-    if (!baseColor) baseColor = [NSColor textColor];
-    NSColor *dimColor = [baseColor colorWithAlphaComponent:0.3];
-    NSColor *activeColor = baseColor;
+    // Use temporary attributes on the layout manager so the syntax
+    // highlighter doesn't overwrite them
+    NSLayoutManager *lm = self.layoutManager;
+    NSRange fullRange = NSMakeRange(0, text.length);
 
-    NSTextStorage *storage = self.textStorage;
-    [storage beginEditing];
-    [storage addAttribute:NSForegroundColorAttributeName value:dimColor
-                    range:NSMakeRange(0, text.length)];
-    [storage addAttribute:NSForegroundColorAttributeName value:activeColor
-                    range:paragraphRange];
-    [storage endEditing];
+    // Dim everything with a semi-transparent overlay color
+    NSColor *dimColor = [[NSColor blackColor] colorWithAlphaComponent:0.55];
+    [lm removeTemporaryAttribute:NSForegroundColorAttributeName forCharacterRange:fullRange];
+    [lm addTemporaryAttribute:NSForegroundColorAttributeName value:dimColor
+                forCharacterRange:fullRange];
+
+    // Remove dimming from the active paragraph to reveal original colors
+    [lm removeTemporaryAttribute:NSForegroundColorAttributeName
+                forCharacterRange:paragraphRange];
 }
 
 - (void)clearFocusDimming
@@ -279,13 +280,8 @@ NS_INLINE BOOL MPAreRectsEqual(NSRect r1, NSRect r2)
     if (text.length == 0)
         return;
 
-    NSColor *normalColor = self.textColor;
-    if (!normalColor) normalColor = [NSColor textColor];
-    NSTextStorage *storage = self.textStorage;
-    [storage beginEditing];
-    [storage addAttribute:NSForegroundColorAttributeName value:normalColor
-                    range:NSMakeRange(0, text.length)];
-    [storage endEditing];
+    [self.layoutManager removeTemporaryAttribute:NSForegroundColorAttributeName
+                                forCharacterRange:NSMakeRange(0, text.length)];
 }
 
 
