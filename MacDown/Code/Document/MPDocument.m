@@ -196,7 +196,7 @@ typedef NS_ENUM(NSUInteger, MPWordCountType) {
 @property (weak) IBOutlet NSPopUpButton *wordCountWidget;
 @property (strong) IBOutlet MPToolbarController *toolbarController;
 @property (strong) MPSidebarController *sidebarController;
-@property (strong) NSTextField *fillerCountLabel;
+@property (strong) NSPopUpButton *fillerCountButton;
 @property (copy, nonatomic) NSString *autosaveName;
 @property (strong) HGMarkdownHighlighter *highlighter;
 @property (strong) MPRenderer *renderer;
@@ -462,21 +462,20 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
     wordCountWidget.hidden = !self.preferences.editorShowWordCount;
     wordCountWidget.enabled = NO;
 
-    // Create filler word count label in the bottom-right corner
+    // Create filler word count popup in the bottom-right corner
     NSView *editorContainer = self.editorContainer;
-    self.fillerCountLabel = [NSTextField labelWithString:@""];
-    self.fillerCountLabel.font = [NSFont systemFontOfSize:10];
-    self.fillerCountLabel.textColor = [NSColor secondaryLabelColor];
-    self.fillerCountLabel.backgroundColor = [NSColor colorWithWhite:0.95 alpha:0.85];
-    self.fillerCountLabel.drawsBackground = YES;
-    self.fillerCountLabel.alignment = NSTextAlignmentCenter;
-    self.fillerCountLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    self.fillerCountLabel.hidden = !self.preferences.editorHighlightFillers;
-    [editorContainer addSubview:self.fillerCountLabel];
+    self.fillerCountButton = [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:YES];
+    self.fillerCountButton.font = [NSFont systemFontOfSize:10];
+    self.fillerCountButton.controlSize = NSControlSizeMini;
+    self.fillerCountButton.bezelStyle = NSBezelStyleInline;
+    self.fillerCountButton.bordered = NO;
+    self.fillerCountButton.translatesAutoresizingMaskIntoConstraints = NO;
+    self.fillerCountButton.hidden = !self.preferences.editorHighlightFillers;
+    [self.fillerCountButton addItemWithTitle:@"0 issues"];
+    [editorContainer addSubview:self.fillerCountButton];
     [NSLayoutConstraint activateConstraints:@[
-        [self.fillerCountLabel.trailingAnchor constraintEqualToAnchor:editorContainer.trailingAnchor constant:-8],
-        [self.fillerCountLabel.bottomAnchor constraintEqualToAnchor:editorContainer.bottomAnchor constant:-8],
-        [self.fillerCountLabel.widthAnchor constraintGreaterThanOrEqualToConstant:70],
+        [self.fillerCountButton.trailingAnchor constraintEqualToAnchor:editorContainer.trailingAnchor constant:-4],
+        [self.fillerCountButton.bottomAnchor constraintEqualToAnchor:editorContainer.bottomAnchor constant:-4],
     ]];
 
     // Install sidebar (file browser + document outline)
@@ -1764,12 +1763,12 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
     if (newValue)
     {
         [self updateFillerHighlights];
-        self.fillerCountLabel.hidden = NO;
+        self.fillerCountButton.hidden = NO;
     }
     else
     {
         [self clearFillerHighlights];
-        self.fillerCountLabel.hidden = YES;
+        self.fillerCountButton.hidden = YES;
     }
 }
 
@@ -1787,7 +1786,8 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
 
     if (text.length == 0)
     {
-        self.fillerCountLabel.stringValue = @"0 issues";
+        [self.fillerCountButton removeAllItems];
+        [self.fillerCountButton addItemWithTitle:@"0 issues"];
         return;
     }
 
@@ -1819,8 +1819,36 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
                 forCharacterRange:issue.range];
     }
 
+    // Populate the dropdown with per-category breakdown
     NSUInteger total = analysis.issues.count;
-    self.fillerCountLabel.stringValue = [NSString stringWithFormat:@"%lu issues", (unsigned long)total];
+    [self.fillerCountButton removeAllItems];
+    [self.fillerCountButton addItemWithTitle:[NSString stringWithFormat:@"%lu issues", (unsigned long)total]];
+
+    if (analysis.qualifierCount > 0)
+    {
+        NSString *title = [NSString stringWithFormat:@"\u25CF  %lu qualifiers (yellow)", (unsigned long)analysis.qualifierCount];
+        [self.fillerCountButton addItemWithTitle:title];
+    }
+    if (analysis.weaselCount > 0)
+    {
+        NSString *title = [NSString stringWithFormat:@"\u25CF  %lu weasel words (orange)", (unsigned long)analysis.weaselCount];
+        [self.fillerCountButton addItemWithTitle:title];
+    }
+    if (analysis.indirectCount > 0)
+    {
+        NSString *title = [NSString stringWithFormat:@"\u25CF  %lu indirect/vague (pink)", (unsigned long)analysis.indirectCount];
+        [self.fillerCountButton addItemWithTitle:title];
+    }
+    if (analysis.adverbCount > 0)
+    {
+        NSString *title = [NSString stringWithFormat:@"\u25CF  %lu weak adverbs (blue)", (unsigned long)analysis.adverbCount];
+        [self.fillerCountButton addItemWithTitle:title];
+    }
+    if (analysis.repeatedCount > 0)
+    {
+        NSString *title = [NSString stringWithFormat:@"\u25CF  %lu repeated words (red)", (unsigned long)analysis.repeatedCount];
+        [self.fillerCountButton addItemWithTitle:title];
+    }
 }
 
 - (void)clearFillerHighlights
@@ -1831,7 +1859,8 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
         [self.editor.layoutManager removeTemporaryAttribute:NSBackgroundColorAttributeName
                                           forCharacterRange:NSMakeRange(0, text.length)];
     }
-    self.fillerCountLabel.stringValue = @"";
+    [self.fillerCountButton removeAllItems];
+    [self.fillerCountButton addItemWithTitle:@"0 issues"];
 }
 
 - (IBAction)render:(id)sender
