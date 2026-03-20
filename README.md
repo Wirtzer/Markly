@@ -39,9 +39,13 @@ Based on [MacDown](https://github.com/MacDownApp/macdown) by Tzu-ping Chung, reb
 
 ## Install
 
+Download **Markly-1.0.0.dmg** from the latest release, open it, and drag Markly to your Applications folder.
+
+### Build from Source
+
 ```
-git clone https://github.com/Wirtzer/macdownv2.git
-cd macdownv2
+git clone https://github.com/Wirtzer/Markly.git
+cd Markly
 git submodule update --init --recursive
 pod install
 open MacDown.xcworkspace
@@ -51,6 +55,6 @@ Build and run in Xcode (Cmd+R).
 
 ## License
 
-The original MacDown code is under the MIT License. See the `LICENSE` directory for details. All rights reserved for new features and additions.
+The original MacDown code is under the MIT License. See the `LICENSE` directory for details. All Markly additions are Copyright (c) 2026 Alex Wirtzer. All rights reserved. See [LICENSE.md](LICENSE.md).
 
 Editor themes and CSS from [Mou](http://mouapp.com) by Chen Luo.
