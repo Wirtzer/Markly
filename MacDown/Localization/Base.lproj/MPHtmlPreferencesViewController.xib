@@ -121,7 +121,6 @@
                         <font key="font" metaFont="smallSystem"/>
                     </buttonCell>
                     <connections>
-                        <binding destination="-2" name="enabled" keyPath="self.preferences.htmlSyntaxHighlighting" id="9S7-QA-gUw"/>
                         <binding destination="-2" name="value" keyPath="self.preferences.htmlGraphviz" id="28T-6A-JOn"/>
                     </connections>
                 </button>
@@ -132,7 +131,6 @@
                         <font key="font" metaFont="smallSystem"/>
                     </buttonCell>
                     <connections>
-                        <binding destination="-2" name="enabled" keyPath="self.preferences.htmlSyntaxHighlighting" id="EPx-Wd-dqb"/>
                         <binding destination="-2" name="value" keyPath="self.preferences.htmlMermaid" id="0Vt-zm-bOO"/>
                     </connections>
                 </button>
