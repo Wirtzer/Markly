@@ -290,7 +290,7 @@
                 <constraint firstItem="Qe1-sK-Yxe" firstAttribute="top" secondItem="HzY-ws-XRq" secondAttribute="bottom" constant="8" id="RD0-gv-top"/>
                 <constraint firstItem="Qe1-sK-Yxe" firstAttribute="leading" secondItem="RCL-iK-kgx" secondAttribute="leading" id="RD0-gv-lea"/>
                 <constraint firstItem="Qe1-sK-Yxe" firstAttribute="trailing" secondItem="RCL-iK-kgx" secondAttribute="trailing" id="RD0-gv-tra"/>
-                <constraint firstItem="bWg-uC-6W8" firstAttribute="top" secondItem="Qe1-sK-Yxe" secondAttribute="bottom" constant="6" id="RD0-mm-top"/>
+                <constraint firstItem="bWg-uC-6W8" firstAttribute="top" secondItem="Qe1-sK-Yxe" secondAttribute="bottom" constant="4" id="RD0-mm-top"/>
                 <constraint firstItem="bWg-uC-6W8" firstAttribute="leading" secondItem="RCL-iK-kgx" secondAttribute="leading" id="RD0-mm-lea"/>
                 <constraint firstItem="bWg-uC-6W8" firstAttribute="trailing" secondItem="RCL-iK-kgx" secondAttribute="trailing" id="RD0-mm-tra"/>
                 <constraint firstItem="P7Z-ag-nPR" firstAttribute="top" secondItem="bWg-uC-6W8" secondAttribute="bottom" constant="8" id="q6m-Qx-ZWn"/>

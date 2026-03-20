@@ -1123,11 +1123,15 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
 
 - (BOOL)rendererHasMermaid:(MPRenderer *)renderer
 {
+    if (self.preferences.htmlMermaid && !self.preferences.htmlSyntaxHighlighting)
+        self.preferences.htmlSyntaxHighlighting = YES;
     return self.preferences.htmlMermaid;
 }
 
 - (BOOL)rendererHasGraphviz:(MPRenderer *)renderer
 {
+    if (self.preferences.htmlGraphviz && !self.preferences.htmlSyntaxHighlighting)
+        self.preferences.htmlSyntaxHighlighting = YES;
     return self.preferences.htmlGraphviz;
 }
 
