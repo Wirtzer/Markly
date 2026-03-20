@@ -24,6 +24,7 @@ extern NSString * const MPDidDetectFreshInstallationNotification;
 @property (assign) BOOL rememberViewModePerFile; // Remember per-file view mode
 @property (assign) BOOL editorFocusMode; // Focus mode: dim non-active paragraph
 @property (assign) BOOL editorTypewriterMode; // Typewriter mode: keep cursor centered
+@property (assign) BOOL editorHighlightFillers; // Highlight filler words
 
 // Extension flags.
 @property (assign) BOOL extensionIntraEmphasis;

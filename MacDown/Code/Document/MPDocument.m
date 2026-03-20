@@ -196,6 +196,7 @@ typedef NS_ENUM(NSUInteger, MPWordCountType) {
 @property (weak) IBOutlet NSPopUpButton *wordCountWidget;
 @property (strong) IBOutlet MPToolbarController *toolbarController;
 @property (strong) MPSidebarController *sidebarController;
+@property (strong) NSTextField *fillerCountLabel;
 @property (copy, nonatomic) NSString *autosaveName;
 @property (strong) HGMarkdownHighlighter *highlighter;
 @property (strong) MPRenderer *renderer;
@@ -461,6 +462,23 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
     wordCountWidget.hidden = !self.preferences.editorShowWordCount;
     wordCountWidget.enabled = NO;
 
+    // Create filler word count label in the bottom-right corner
+    NSView *editorContainer = self.editorContainer;
+    self.fillerCountLabel = [NSTextField labelWithString:@""];
+    self.fillerCountLabel.font = [NSFont systemFontOfSize:10];
+    self.fillerCountLabel.textColor = [NSColor secondaryLabelColor];
+    self.fillerCountLabel.backgroundColor = [NSColor colorWithWhite:0.95 alpha:0.85];
+    self.fillerCountLabel.drawsBackground = YES;
+    self.fillerCountLabel.alignment = NSTextAlignmentCenter;
+    self.fillerCountLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    self.fillerCountLabel.hidden = !self.preferences.editorHighlightFillers;
+    [editorContainer addSubview:self.fillerCountLabel];
+    [NSLayoutConstraint activateConstraints:@[
+        [self.fillerCountLabel.trailingAnchor constraintEqualToAnchor:editorContainer.trailingAnchor constant:-8],
+        [self.fillerCountLabel.bottomAnchor constraintEqualToAnchor:editorContainer.bottomAnchor constant:-8],
+        [self.fillerCountLabel.widthAnchor constraintGreaterThanOrEqualToConstant:70],
+    ]];
+
     // Install sidebar (file browser + document outline)
     self.sidebarController = [[MPSidebarController alloc] initWithContentView:controller.window.contentView];
     [self.sidebarController installInWindow:controller.window aroundView:self.splitView];
@@ -514,6 +532,10 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
         // Apply focus/typewriter mode from preferences
         self.editor.focusModeEnabled = self.preferences.editorFocusMode;
         self.editor.typewriterModeEnabled = self.preferences.editorTypewriterMode;
+
+        // Apply filler word highlighting if active
+        if (self.preferences.editorHighlightFillers)
+            [self updateFillerHighlights];
     }];
 }
 
@@ -756,6 +778,10 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
     else if (action == @selector(toggleSidebar:))
     {
         ((NSMenuItem *)item).state = self.sidebarController.sidebarVisible ? NSOnState : NSOffState;
+    }
+    else if (action == @selector(toggleProseAnalysis:))
+    {
+        ((NSMenuItem *)item).state = self.preferences.editorHighlightFillers ? NSOnState : NSOffState;
     }
     return result;
 }
@@ -1205,6 +1231,10 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
 
     // Update document outline in sidebar
     [self.sidebarController updateHeadingsFromMarkdown:self.editor.string];
+
+    // Update filler word highlights if active
+    if (self.preferences.editorHighlightFillers)
+        [self updateFillerHighlights];
 }
 
 - (void)userDefaultsDidChange:(NSNotification *)notification
@@ -1698,7 +1728,7 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
         [MPCommandItem itemWithTitle:@"Unordered List" shortcut:@"" action:@selector(toggleUnorderedList:) target:self],
         [MPCommandItem itemWithTitle:@"Ordered List" shortcut:@"" action:@selector(toggleOrderedList:) target:self],
         [MPCommandItem itemWithTitle:@"Strikethrough" shortcut:@"" action:@selector(toggleStrikethrough:) target:self],
-        [MPCommandItem itemWithTitle:@"Highlight Filler Words" shortcut:@"" action:@selector(toggleProseAnalysis:) target:self],
+        [MPCommandItem toggleWithTitle:@"Highlight Filler Words" shortcut:@"" action:@selector(toggleProseAnalysis:) target:self isOn:self.preferences.editorHighlightFillers],
         [MPCommandItem itemWithTitle:@"Copy HTML" shortcut:@"\u2325\u2318C" action:@selector(copyHtml:) target:self],
         [MPCommandItem itemWithTitle:@"Export HTML..." shortcut:@"\u2325\u2318E" action:@selector(exportHtml:) target:self],
         [MPCommandItem itemWithTitle:@"Export PDF..." shortcut:@"\u2325\u2318P" action:@selector(exportPdf:) target:self],
@@ -1709,58 +1739,78 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
 
 - (IBAction)toggleProseAnalysis:(id)sender
 {
-    NSString *text = self.editor.string;
-    MPProseAnalysis *analysis = [MPProseAnalysis analyzeText:text];
+    BOOL newValue = !self.preferences.editorHighlightFillers;
+    self.preferences.editorHighlightFillers = newValue;
 
-    if (analysis.fillerWordRanges.count == 0)
+    if (newValue)
     {
-        NSAlert *alert = [[NSAlert alloc] init];
-        alert.messageText = @"Prose Analysis";
-        alert.informativeText = @"No filler words or repeated words found.";
-        [alert runModal];
+        [self updateFillerHighlights];
+        self.fillerCountLabel.hidden = NO;
+    }
+    else
+    {
+        [self clearFillerHighlights];
+        self.fillerCountLabel.hidden = YES;
+    }
+}
+
+- (void)updateFillerHighlights
+{
+    if (!self.preferences.editorHighlightFillers)
+        return;
+
+    NSString *text = self.editor.string;
+    NSLayoutManager *lm = self.editor.layoutManager;
+    NSRange fullRange = NSMakeRange(0, text.length);
+
+    // Clear previous highlights
+    [lm removeTemporaryAttribute:NSBackgroundColorAttributeName
+                forCharacterRange:fullRange];
+
+    if (text.length == 0)
+    {
+        self.fillerCountLabel.stringValue = @"0 fillers";
         return;
     }
 
-    // Highlight filler words in the editor with a yellow background
-    NSTextStorage *storage = self.editor.textStorage;
-    [storage beginEditing];
+    MPProseAnalysis *analysis = [MPProseAnalysis analyzeText:text];
 
-    // Clear previous highlights
-    [storage removeAttribute:NSBackgroundColorAttributeName
-                       range:NSMakeRange(0, text.length)];
+    NSColor *fillerColor = [NSColor colorWithRed:1.0 green:0.95 blue:0.4 alpha:0.45];
+    NSColor *repeatColor = [NSColor colorWithRed:1.0 green:0.7 blue:0.3 alpha:0.45];
 
-    // Highlight filler words in yellow
+    // Highlight filler words
     for (NSValue *rangeVal in analysis.fillerWordRanges)
     {
         NSRange range = rangeVal.rangeValue;
         if (NSMaxRange(range) <= text.length)
-            [storage addAttribute:NSBackgroundColorAttributeName
-                            value:[NSColor colorWithRed:1.0 green:1.0 blue:0.6 alpha:0.5]
-                            range:range];
+            [lm addTemporaryAttribute:NSBackgroundColorAttributeName
+                                value:fillerColor
+                    forCharacterRange:range];
     }
 
-    // Highlight repeated words in orange
+    // Highlight repeated consecutive words
     for (NSValue *rangeVal in analysis.repeatedWordRanges)
     {
         NSRange range = rangeVal.rangeValue;
         if (NSMaxRange(range) <= text.length)
-            [storage addAttribute:NSBackgroundColorAttributeName
-                            value:[NSColor colorWithRed:1.0 green:0.8 blue:0.4 alpha:0.5]
-                            range:range];
+            [lm addTemporaryAttribute:NSBackgroundColorAttributeName
+                                value:repeatColor
+                    forCharacterRange:range];
     }
 
-    [storage endEditing];
+    NSUInteger total = analysis.fillerWordRanges.count + analysis.repeatedWordRanges.count;
+    self.fillerCountLabel.stringValue = [NSString stringWithFormat:@"%lu fillers", (unsigned long)total];
+}
 
-    NSString *summary = [NSString stringWithFormat:
-        @"Found %lu filler words and %lu repeated words.\n\nFillers: %@",
-        (unsigned long)analysis.fillerWordRanges.count,
-        (unsigned long)analysis.repeatedWordRanges.count,
-        [analysis.fillerWordsFound componentsJoinedByString:@", "]];
-
-    NSAlert *alert = [[NSAlert alloc] init];
-    alert.messageText = @"Prose Analysis";
-    alert.informativeText = summary;
-    [alert runModal];
+- (void)clearFillerHighlights
+{
+    NSString *text = self.editor.string;
+    if (text.length > 0)
+    {
+        [self.editor.layoutManager removeTemporaryAttribute:NSBackgroundColorAttributeName
+                                          forCharacterRange:NSMakeRange(0, text.length)];
+    }
+    self.fillerCountLabel.stringValue = @"";
 }
 
 - (IBAction)render:(id)sender

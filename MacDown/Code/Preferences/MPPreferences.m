@@ -79,6 +79,7 @@ static NSString * const kMPDefaultHtmlStyleName = @"GitHub2";
 @dynamic rememberViewModePerFile;
 @dynamic editorFocusMode;
 @dynamic editorTypewriterMode;
+@dynamic editorHighlightFillers;
 
 @dynamic extensionIntraEmphasis;
 @dynamic extensionTables;
