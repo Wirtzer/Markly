@@ -467,6 +467,9 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
     self.fillerCountButton = [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:YES];
     self.fillerCountButton.font = [NSFont monospacedDigitSystemFontOfSize:11 weight:NSFontWeightMedium];
     self.fillerCountButton.controlSize = NSControlSizeSmall;
+    self.fillerCountButton.wantsLayer = YES;
+    self.fillerCountButton.layer.backgroundColor = [[NSColor colorWithWhite:0.2 alpha:0.85] CGColor];
+    self.fillerCountButton.layer.cornerRadius = 5;
     self.fillerCountButton.translatesAutoresizingMaskIntoConstraints = NO;
     self.fillerCountButton.hidden = !self.preferences.editorHighlightFillers;
     [self.fillerCountButton addItemWithTitle:@"0 issues"];
@@ -1821,9 +1824,14 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
     NSUInteger total = analysis.issues.count;
     [self.fillerCountButton removeAllItems];
 
-    // Title item (shown in the button)
+    // Title item (shown in the button) — use attributed string for visibility
     NSString *titleStr = [NSString stringWithFormat:@"\u26A0 %lu issues", (unsigned long)total];
-    [self.fillerCountButton addItemWithTitle:titleStr];
+    NSAttributedString *titleAttr = [[NSAttributedString alloc] initWithString:titleStr attributes:@{
+        NSForegroundColorAttributeName: [NSColor whiteColor],
+        NSFontAttributeName: [NSFont monospacedDigitSystemFontOfSize:11 weight:NSFontWeightBold],
+    }];
+    [self.fillerCountButton addItemWithTitle:@""];
+    self.fillerCountButton.itemArray.firstObject.attributedTitle = titleAttr;
 
     struct { NSUInteger count; NSString *label; NSColor *color; } rows[] = {
         { analysis.qualifierCount, @"qualifiers",    [NSColor colorWithRed:0.9 green:0.85 blue:0.0 alpha:1.0] },
