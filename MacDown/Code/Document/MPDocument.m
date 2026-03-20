@@ -1709,9 +1709,10 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
 - (IBAction)showCommandPalette:(id)sender
 {
     NSArray *commands = @[
-        [MPCommandItem toggleWithTitle:@"Toggle Sidebar" shortcut:@"\u2325\u2318S" action:@selector(toggleSidebar:) target:self isOn:self.sidebarController.sidebarVisible],
+        [MPCommandItem toggleWithTitle:@"Highlight Filler Words" shortcut:@"" action:@selector(toggleProseAnalysis:) target:self isOn:self.preferences.editorHighlightFillers],
         [MPCommandItem toggleWithTitle:@"Focus Mode" shortcut:@"\u2325\u2318F" action:@selector(toggleFocusMode:) target:self isOn:self.preferences.editorFocusMode],
         [MPCommandItem toggleWithTitle:@"Typewriter Mode" shortcut:@"\u21E7\u2318T" action:@selector(toggleTypewriterMode:) target:self isOn:self.preferences.editorTypewriterMode],
+        [MPCommandItem toggleWithTitle:@"Toggle Sidebar" shortcut:@"\u2325\u2318S" action:@selector(toggleSidebar:) target:self isOn:self.sidebarController.sidebarVisible],
         [MPCommandItem itemWithTitle:@"Show Editor Only" shortcut:@"" action:@selector(showEditorOnly:) target:self],
         [MPCommandItem itemWithTitle:@"Show Preview Only" shortcut:@"" action:@selector(showPreviewOnly:) target:self],
         [MPCommandItem itemWithTitle:@"Show Editor & Preview" shortcut:@"" action:@selector(showBothPanes:) target:self],
@@ -1728,7 +1729,6 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
         [MPCommandItem itemWithTitle:@"Unordered List" shortcut:@"" action:@selector(toggleUnorderedList:) target:self],
         [MPCommandItem itemWithTitle:@"Ordered List" shortcut:@"" action:@selector(toggleOrderedList:) target:self],
         [MPCommandItem itemWithTitle:@"Strikethrough" shortcut:@"" action:@selector(toggleStrikethrough:) target:self],
-        [MPCommandItem toggleWithTitle:@"Highlight Filler Words" shortcut:@"" action:@selector(toggleProseAnalysis:) target:self isOn:self.preferences.editorHighlightFillers],
         [MPCommandItem itemWithTitle:@"Copy HTML" shortcut:@"\u2325\u2318C" action:@selector(copyHtml:) target:self],
         [MPCommandItem itemWithTitle:@"Export HTML..." shortcut:@"\u2325\u2318E" action:@selector(exportHtml:) target:self],
         [MPCommandItem itemWithTitle:@"Export PDF..." shortcut:@"\u2325\u2318P" action:@selector(exportPdf:) target:self],
