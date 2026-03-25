@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		UPDC00000000000000000003 /* MPUpdateChecker.m in Sources */ = {isa = PBXBuildFile; fileRef = UPDC00000000000000000002 /* MPUpdateChecker.m */; };
 		1F002A23195B3DAE008B8D93 /* MPRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1F002A22195B3DAE008B8D93 /* MPRenderer.m */; };
 		1F0D9D65194AC7CF008E1856 /* NSString+Lookup.m in Sources */ = {isa = PBXBuildFile; fileRef = 1F0D9D5F194AC7CF008E1856 /* NSString+Lookup.m */; };
 		1F0D9D66194AC7CF008E1856 /* NSTextView+Autocomplete.m in Sources */ = {isa = PBXBuildFile; fileRef = 1F0D9D61194AC7CF008E1856 /* NSTextView+Autocomplete.m */; };
@@ -395,6 +396,8 @@
 		1F9A14E9194EEE9900D1C6A9 /* MPExportPanelAccessoryViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MPExportPanelAccessoryViewController.m; path = Code/Application/MPExportPanelAccessoryViewController.m; sourceTree = "<group>"; };
 		1F9A14EA194EEE9900D1C6A9 /* MPMainController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MPMainController.h; path = Code/Application/MPMainController.h; sourceTree = "<group>"; };
 		1F9A14EB194EEE9900D1C6A9 /* MPMainController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MPMainController.m; path = Code/Application/MPMainController.m; sourceTree = "<group>"; };
+		UPDC00000000000000000001 /* MPUpdateChecker.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = MPUpdateChecker.h; path = Code/Application/MPUpdateChecker.h; sourceTree = "<group>"; };
+		UPDC00000000000000000002 /* MPUpdateChecker.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = MPUpdateChecker.m; path = Code/Application/MPUpdateChecker.m; sourceTree = "<group>"; };
 		1F9A14EE194EEEDD00D1C6A9 /* Styles */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Styles; path = Resources/Styles; sourceTree = "<group>"; };
 		1F9A14F3194EF6A600D1C6A9 /* Themes */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Themes; path = Resources/Themes; sourceTree = "<group>"; };
 		1F9F351C2099A1FC00C4B4F1 /* sk-SK */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "sk-SK"; path = "Localization/sk-SK.lproj/Localizable.strings"; sourceTree = "<group>"; };
@@ -745,6 +748,8 @@
 				1F0D9D81194AC83C008E1856 /* MainMenu.xib */,
 				1F9A14EA194EEE9900D1C6A9 /* MPMainController.h */,
 				1F9A14EB194EEE9900D1C6A9 /* MPMainController.m */,
+				UPDC00000000000000000001 /* MPUpdateChecker.h */,
+				UPDC00000000000000000002 /* MPUpdateChecker.m */,
 				1F9A14E8194EEE9900D1C6A9 /* MPExportPanelAccessoryViewController.h */,
 				1F9A14E9194EEE9900D1C6A9 /* MPExportPanelAccessoryViewController.m */,
 				1FB3C0221E5061A2002AEB6A /* MPExportPanelAccessoryViewController.xib */,
@@ -1263,6 +1268,7 @@
 				1F5A37101C868EC0006E63E7 /* MPPlugIn.m in Sources */,
 				1FBDFEA11962A25A00BEEA70 /* MPGeneralPreferencesViewController.m in Sources */,
 				1F9A14ED194EEE9900D1C6A9 /* MPMainController.m in Sources */,
+				UPDC00000000000000000003 /* MPUpdateChecker.m in Sources */,
 				1F002A23195B3DAE008B8D93 /* MPRenderer.m in Sources */,
 				1FBBD4CB194CA36500BB3C88 /* hoedown_html_patch.c in Sources */,
 				1F8A8364195346B200B6BF69 /* pmh_styleparser.c in Sources */,

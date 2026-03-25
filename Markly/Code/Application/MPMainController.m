@@ -8,7 +8,7 @@
 
 #import "MPMainController.h"
 #import <MASPreferences/MASPreferencesWindowController.h>
-#import <Sparkle/SUUpdater.h>
+#import "MPUpdateChecker.h"
 #import "MPGlobals.h"
 #import "MPUtilities.h"
 #import "NSDocumentController+Document.h"
@@ -252,16 +252,15 @@ NS_INLINE void treat()
     [self openPendingPipedContent];
     [self openPendingFiles];
     treat();
-}
 
-
-#pragma mark - SUUpdaterDelegate
-
-- (NSString *)feedURLStringForUpdater:(SUUpdater *)updater
-{
-    if (self.preferences.updateIncludesPreReleases)
-        return [NSBundle mainBundle].infoDictionary[@"SUBetaFeedURL"];
-    return [NSBundle mainBundle].infoDictionary[@"SUFeedURL"];
+    // Check for updates once per day (silently — only shows dialog if update found)
+    static dispatch_once_t updateOnce;
+    dispatch_once(&updateOnce, ^{
+        NSDate *lastCheck = [[NSUserDefaults standardUserDefaults] objectForKey:@"MPLastUpdateCheckDate"];
+        BOOL shouldCheck = !lastCheck || [[NSDate date] timeIntervalSinceDate:lastCheck] > 86400;
+        if (shouldCheck)
+            [[MPUpdateChecker sharedChecker] checkForUpdatesUserInitiated:NO];
+    });
 }
 
 
