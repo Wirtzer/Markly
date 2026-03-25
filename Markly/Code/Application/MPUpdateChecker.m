@@ -100,6 +100,19 @@ static NSString * const kMPLastUpdateCheckKey = @"MPLastUpdateCheckDate";
 
 #pragma mark - Alerts
 
+- (NSString *)stripMarkdown:(NSString *)text
+{
+    // Strip common markdown formatting for plain-text display
+    NSMutableString *s = [text mutableCopy];
+    // Remove heading markers
+    NSRegularExpression *headings = [NSRegularExpression regularExpressionWithPattern:@"^#{1,6}\\s*" options:NSRegularExpressionAnchorsMatchLines error:nil];
+    [headings replaceMatchesInString:s options:0 range:NSMakeRange(0, s.length) withTemplate:@""];
+    // Remove bold/italic markers
+    NSRegularExpression *bold = [NSRegularExpression regularExpressionWithPattern:@"\\*{1,2}([^*]+)\\*{1,2}" options:0 error:nil];
+    [bold replaceMatchesInString:s options:0 range:NSMakeRange(0, s.length) withTemplate:@"$1"];
+    return [s copy];
+}
+
 - (void)showUpdateAvailableFrom:(NSString *)current to:(NSString *)latest url:(NSString *)urlString notes:(NSString *)notes
 {
     NSAlert *alert = [[NSAlert alloc] init];
@@ -107,7 +120,7 @@ static NSString * const kMPLastUpdateCheckKey = @"MPLastUpdateCheckDate";
 
     NSString *info = [NSString stringWithFormat:@"You're currently running version %@.", current];
     if (notes.length > 0)
-        info = [info stringByAppendingFormat:@"\n\n%@", notes];
+        info = [info stringByAppendingFormat:@"\n\n%@", [self stripMarkdown:notes]];
     alert.informativeText = info;
 
     [alert addButtonWithTitle:@"Download"];
