@@ -167,6 +167,7 @@ static CGFloat const kMPSidebarMaxWidth = 400.0;
 @property (nonatomic, strong) MPFileNode *rootFileNode;
 @property (nonatomic, strong) NSArray<MPHeadingNode *> *headingRoots;
 @property (nonatomic) BOOL sidebarVisible;
+@property (nonatomic) BOOL isAnimatingCollapse;  // bypass min-width during programmatic hide
 @property (nonatomic) CGFloat savedSidebarWidth;
 @end
 
@@ -184,18 +185,15 @@ static CGFloat const kMPSidebarMaxWidth = 400.0;
 
     // Create the outer split view
     self.outerSplitView = [[NSSplitView alloc] initWithFrame:contentView.bounds];
-    self.outerSplitView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
     self.outerSplitView.dividerStyle = NSSplitViewDividerStyleThin;
     self.outerSplitView.vertical = YES;
     self.outerSplitView.delegate = self;
 
     // Create sidebar container
     self.sidebarView = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, kMPSidebarDefaultWidth, contentView.bounds.size.height)];
-    self.sidebarView.autoresizingMask = NSViewHeightSizable;
 
     // Create tab view for Files / Outline tabs
     self.tabView = [[NSTabView alloc] initWithFrame:self.sidebarView.bounds];
-    self.tabView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
     self.tabView.tabViewType = NSTopTabsBezelBorder;
     self.tabView.controlSize = NSControlSizeSmall;
 
@@ -261,8 +259,6 @@ static CGFloat const kMPSidebarMaxWidth = 400.0;
     self.headingOutlineView.selectionHighlightStyle = NSTableViewSelectionHighlightStyleSourceList;
     self.headingOutlineView.dataSource = self;
     self.headingOutlineView.delegate = self;
-    self.headingOutlineView.doubleAction = @selector(headingDoubleClicked:);
-    self.headingOutlineView.target = self;
 
     NSTableColumn *col = [[NSTableColumn alloc] initWithIdentifier:@"heading"];
     col.editable = NO;
@@ -279,19 +275,19 @@ static CGFloat const kMPSidebarMaxWidth = 400.0;
 - (void)installInWindow:(NSWindow *)window aroundView:(NSView *)contentSplitView
 {
     NSView *windowContentView = window.contentView;
-    NSRect frame = contentSplitView.frame;
 
-    // Remove existing content from window
+    // Remove the document split view from the window content
     [contentSplitView removeFromSuperview];
 
-    // Configure outer split view
-    self.outerSplitView.frame = frame;
+    // Both subviews must use auto-layout for NSSplitView to manage them
+    self.sidebarView.translatesAutoresizingMaskIntoConstraints = NO;
+    contentSplitView.translatesAutoresizingMaskIntoConstraints = NO;
 
-    // Add sidebar + content
+    // Add sidebar (left) + document content (right)
     [self.outerSplitView addSubview:self.sidebarView];
     [self.outerSplitView addSubview:contentSplitView];
 
-    // Pin outer split view to fill window content
+    // Pin outer split view to fill the entire window content area
     self.outerSplitView.translatesAutoresizingMaskIntoConstraints = NO;
     [windowContentView addSubview:self.outerSplitView];
     [NSLayoutConstraint activateConstraints:@[
@@ -300,6 +296,21 @@ static CGFloat const kMPSidebarMaxWidth = 400.0;
         [self.outerSplitView.leadingAnchor constraintEqualToAnchor:windowContentView.leadingAnchor],
         [self.outerSplitView.trailingAnchor constraintEqualToAnchor:windowContentView.trailingAnchor],
     ]];
+
+    // Pin tabView inside sidebarView with auto-layout too
+    self.tabView.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+        [self.tabView.topAnchor constraintEqualToAnchor:self.sidebarView.topAnchor],
+        [self.tabView.bottomAnchor constraintEqualToAnchor:self.sidebarView.bottomAnchor],
+        [self.tabView.leadingAnchor constraintEqualToAnchor:self.sidebarView.leadingAnchor],
+        [self.tabView.trailingAnchor constraintEqualToAnchor:self.sidebarView.trailingAnchor],
+    ]];
+
+    // Give the content side a higher holding priority so the sidebar collapses first
+    [self.outerSplitView setHoldingPriority:NSLayoutPriorityDefaultLow
+                         forSubviewAtIndex:0];
+    [self.outerSplitView setHoldingPriority:NSLayoutPriorityDefaultHigh
+                         forSubviewAtIndex:1];
 
     // Start with sidebar hidden
     [self hideSidebar];
@@ -335,7 +346,10 @@ static CGFloat const kMPSidebarMaxWidth = 400.0;
     if (self.sidebarView.frame.size.width > 0)
         self.savedSidebarWidth = self.sidebarView.frame.size.width;
     self.sidebarVisible = NO;
+    // Temporarily bypass the min-width constraint so we can collapse to 0
+    self.isAnimatingCollapse = YES;
     [self.outerSplitView setPosition:0 ofDividerAtIndex:0];
+    self.isAnimatingCollapse = NO;
 }
 
 - (void)setRootURL:(NSURL *)url
@@ -344,7 +358,12 @@ static CGFloat const kMPSidebarMaxWidth = 400.0;
         return;
     self.rootFileNode = [MPFileNode nodeWithURL:url];
     [self.fileOutlineView reloadData];
-    [self.fileOutlineView expandItem:self.rootFileNode];
+    // Expand top-level directories (rootFileNode itself is not in the outline view)
+    for (MPFileNode *child in self.rootFileNode.children)
+    {
+        if (child.isDirectory)
+            [self.fileOutlineView expandItem:child];
+    }
 }
 
 - (void)updateHeadingsFromMarkdown:(NSString *)markdown
@@ -368,10 +387,9 @@ static CGFloat const kMPSidebarMaxWidth = 400.0;
                     completionHandler:^(NSDocument *doc, BOOL wasOpen, NSError *err) {}];
 }
 
-- (void)headingDoubleClicked:(id)sender
+- (void)navigateToSelectedHeading
 {
-    // Handled by document via notification
-    MPHeadingNode *heading = [self.headingOutlineView itemAtRow:self.headingOutlineView.clickedRow];
+    MPHeadingNode *heading = [self.headingOutlineView itemAtRow:self.headingOutlineView.selectedRow];
     if (!heading)
         return;
 
@@ -484,13 +502,20 @@ static CGFloat const kMPSidebarMaxWidth = 400.0;
     return cell;
 }
 
+- (void)outlineViewSelectionDidChange:(NSNotification *)notification
+{
+    NSOutlineView *outlineView = notification.object;
+    if (outlineView == self.headingOutlineView)
+        [self navigateToSelectedHeading];
+}
+
 
 #pragma mark - NSSplitViewDelegate
 
 - (CGFloat)splitView:(NSSplitView *)splitView constrainMinCoordinate:(CGFloat)proposedMinimumPosition ofSubviewAt:(NSInteger)dividerIndex
 {
     if (splitView == self.outerSplitView && dividerIndex == 0)
-        return kMPSidebarMinWidth;
+        return self.isAnimatingCollapse ? 0 : kMPSidebarMinWidth;
     return proposedMinimumPosition;
 }
 

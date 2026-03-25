@@ -7,6 +7,7 @@
 //
 
 #import "MPDocument.h"
+#import <sys/xattr.h>
 #import <WebKit/WebKit.h>
 #import <JJPluralForm/JJPluralForm.h>
 #import <hoedown/html.h>
@@ -623,6 +624,19 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
 - (NSData *)dataOfType:(NSString *)typeName error:(NSError **)outError
 {
     return [self.editor.string dataUsingEncoding:NSUTF8StringEncoding];
+}
+
+- (BOOL)readFromURL:(NSURL *)url ofType:(NSString *)typeName error:(NSError **)outError
+{
+    // Strip the quarantine extended attribute so macOS doesn't block opening
+    // downloaded files. Signed/notarized apps bypass this automatically, but
+    // during development (or when distributed unsigned) we need to handle it.
+    if (url.isFileURL)
+    {
+        const char *path = url.fileSystemRepresentation;
+        removexattr(path, "com.apple.quarantine", 0);
+    }
+    return [super readFromURL:url ofType:typeName error:outError];
 }
 
 - (BOOL)readFromData:(NSData *)data ofType:(NSString *)typeName
