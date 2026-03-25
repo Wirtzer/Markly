@@ -259,6 +259,8 @@ static CGFloat const kMPSidebarMaxWidth = 400.0;
     self.headingOutlineView.selectionHighlightStyle = NSTableViewSelectionHighlightStyleSourceList;
     self.headingOutlineView.dataSource = self;
     self.headingOutlineView.delegate = self;
+    self.headingOutlineView.action = @selector(headingClicked:);
+    self.headingOutlineView.target = self;
 
     NSTableColumn *col = [[NSTableColumn alloc] initWithIdentifier:@"heading"];
     col.editable = NO;
@@ -387,16 +389,20 @@ static CGFloat const kMPSidebarMaxWidth = 400.0;
                     completionHandler:^(NSDocument *doc, BOOL wasOpen, NSError *err) {}];
 }
 
-- (void)navigateToSelectedHeading
+- (void)headingClicked:(id)sender
 {
-    MPHeadingNode *heading = [self.headingOutlineView itemAtRow:self.headingOutlineView.selectedRow];
+    NSInteger row = self.headingOutlineView.clickedRow;
+    if (row < 0)
+        return;
+    MPHeadingNode *heading = [self.headingOutlineView itemAtRow:row];
     if (!heading)
         return;
 
     [[NSNotificationCenter defaultCenter]
         postNotificationName:@"MPSidebarDidSelectHeading"
                       object:self
-                    userInfo:@{@"range": [NSValue valueWithRange:heading.range]}];
+                    userInfo:@{@"range": [NSValue valueWithRange:heading.range],
+                               @"title": heading.title ?: @""}];
 }
 
 
@@ -500,13 +506,6 @@ static CGFloat const kMPSidebarMaxWidth = 400.0;
     }
 
     return cell;
-}
-
-- (void)outlineViewSelectionDidChange:(NSNotification *)notification
-{
-    NSOutlineView *outlineView = notification.object;
-    if (outlineView == self.headingOutlineView)
-        [self navigateToSelectedHeading];
 }
 
 

@@ -49,7 +49,7 @@ static CGFloat itemWidth = 37;
 {
     // Set up all available toolbar items — sidebar + view mode toggle first
     self->toolbarItems = @[
-        [self toolbarItemWithIdentifier:@"toggle-sidebar" label:NSLocalizedString(@"Sidebar", @"Toggle sidebar toolbar button") icon:@"NSLeftFacingTriangleTemplate" action:@selector(toggleSidebar:)],
+        [self toolbarItemWithIdentifier:@"toggle-sidebar" label:NSLocalizedString(@"Sidebar", @"Toggle sidebar toolbar button") icon:@"NSLeftFacingTriangleTemplate" action:@selector(toggleDocumentSidebar:)],
         [self toolbarItemGroupWithIdentifier:@"view-mode-group" separated:NO label:NSLocalizedString(@"View Mode", @"") items:@[
             [self toolbarItemWithIdentifier:@"view-editor" label:NSLocalizedString(@"Editor Only", @"Editor only toolbar button") icon:@"ToolbarIconShiftLeft" action:@selector(showEditorOnly:)],
             [self toolbarItemWithIdentifier:@"view-both" label:NSLocalizedString(@"Editor & Preview", @"Both panes toolbar button") icon:@"ToolbarIconEditorAndPreview" action:@selector(showBothPanes:)],

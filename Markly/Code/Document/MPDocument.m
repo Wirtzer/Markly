@@ -789,7 +789,7 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
     {
         ((NSMenuItem *)item).state = self.preferences.editorTypewriterMode ? NSOnState : NSOffState;
     }
-    else if (action == @selector(toggleSidebar:))
+    else if (action == @selector(toggleDocumentSidebar:))
     {
         ((NSMenuItem *)item).state = self.sidebarController.sidebarVisible ? NSOnState : NSOffState;
     }
@@ -1677,7 +1677,7 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
     [defaults setObject:perFileViewModes forKey:kMPPerFileViewModeKey];
 }
 
-- (IBAction)toggleSidebar:(id)sender
+- (IBAction)toggleDocumentSidebar:(id)sender
 {
     [self.sidebarController toggleSidebar];
 }
@@ -1743,11 +1743,33 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
 - (void)sidebarDidSelectHeading:(NSNotification *)notification
 {
     NSRange range = [notification.userInfo[@"range"] rangeValue];
-    if (range.location != NSNotFound && self.editor)
+    NSString *title = notification.userInfo[@"title"];
+
+    // Scroll editor if visible
+    if (self.editorVisible && range.location != NSNotFound && self.editor)
     {
         [self.editor setSelectedRange:NSMakeRange(range.location, 0)];
         [self.editor scrollRangeToVisible:NSMakeRange(range.location, 0)];
         [self.editor.window makeFirstResponder:self.editor];
+    }
+
+    // Scroll preview if visible
+    if (self.previewVisible && title.length > 0)
+    {
+        // Find the heading element in the preview by matching text content
+        NSString *js = [NSString stringWithFormat:
+            @"(function() {"
+            "  var headings = document.querySelectorAll('h1,h2,h3,h4,h5,h6');"
+            "  for (var i = 0; i < headings.length; i++) {"
+            "    if (headings[i].textContent.trim() === '%@') {"
+            "      headings[i].scrollIntoView({behavior: 'smooth', block: 'start'});"
+            "      return true;"
+            "    }"
+            "  }"
+            "  return false;"
+            "})()",
+            [title stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]];
+        [self.preview stringByEvaluatingJavaScriptFromString:js];
     }
 }
 
@@ -1757,7 +1779,7 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
         [MPCommandItem toggleWithTitle:@"Highlight Filler Words" shortcut:@"" action:@selector(toggleProseAnalysis:) target:self isOn:self.preferences.editorHighlightFillers],
         [MPCommandItem toggleWithTitle:@"Focus Mode" shortcut:@"\u2325\u2318F" action:@selector(toggleFocusMode:) target:self isOn:self.preferences.editorFocusMode],
         [MPCommandItem toggleWithTitle:@"Typewriter Mode" shortcut:@"\u21E7\u2318T" action:@selector(toggleTypewriterMode:) target:self isOn:self.preferences.editorTypewriterMode],
-        [MPCommandItem toggleWithTitle:@"Toggle Sidebar" shortcut:@"\u2325\u2318S" action:@selector(toggleSidebar:) target:self isOn:self.sidebarController.sidebarVisible],
+        [MPCommandItem toggleWithTitle:@"Toggle Sidebar" shortcut:@"\u2325\u2318S" action:@selector(toggleDocumentSidebar:) target:self isOn:self.sidebarController.sidebarVisible],
         [MPCommandItem itemWithTitle:@"Show Editor Only" shortcut:@"" action:@selector(showEditorOnly:) target:self],
         [MPCommandItem itemWithTitle:@"Show Preview Only" shortcut:@"" action:@selector(showPreviewOnly:) target:self],
         [MPCommandItem itemWithTitle:@"Show Editor & Preview" shortcut:@"" action:@selector(showBothPanes:) target:self],

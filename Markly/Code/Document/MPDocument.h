@@ -22,7 +22,7 @@
 - (IBAction)showEditorOnly:(id)sender;
 - (IBAction)showPreviewOnly:(id)sender;
 - (IBAction)showBothPanes:(id)sender;
-- (IBAction)toggleSidebar:(id)sender;
+- (IBAction)toggleDocumentSidebar:(id)sender;
 - (IBAction)toggleFocusMode:(id)sender;
 - (IBAction)toggleTypewriterMode:(id)sender;
 - (IBAction)exportToDOCX:(id)sender;
