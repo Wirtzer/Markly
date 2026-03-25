@@ -24,8 +24,8 @@ OPENSSL = '/usr/bin/openssl'
 OSASCRIPT = '/usr/bin/osascript'
 
 BUILD_DIR = os.path.join(ROOT_DIR, 'Build')
-APP_NAME = 'MacDown.app'
-ZIP_NAME = 'MacDown.app.zip'
+APP_NAME = 'Markly.app'
+ZIP_NAME = 'Markly.app.zip'
 
 TERM_ENCODING = 'utf-8'
 
@@ -71,8 +71,8 @@ def main(argv):
     if not os.path.exists(BUILD_DIR):
         os.mkdir(BUILD_DIR)
     execute(
-        XCODEBUILD, 'clean', '-workspace', 'MacDown.xcworkspace',
-        '-scheme', 'MacDown',
+        XCODEBUILD, 'clean', '-workspace', 'Markly.xcworkspace',
+        '-scheme', 'Markly',
     )
 
     print('Running external scripts...')
@@ -82,8 +82,8 @@ def main(argv):
     print('Building application archive...')
     os.chdir(BUILD_DIR)
     output = execute(
-        XCODEBUILD, 'archive', '-workspace', '../MacDown.xcworkspace',
-        '-scheme', 'MacDown',
+        XCODEBUILD, 'archive', '-workspace', '../Markly.xcworkspace',
+        '-scheme', 'Markly',
     )
     if isinstance(output, bytes):
         output = output.decode(TERM_ENCODING)
