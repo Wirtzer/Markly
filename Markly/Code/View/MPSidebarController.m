@@ -9,6 +9,13 @@ static CGFloat const kMPSidebarMinWidth = 150.0;
 static CGFloat const kMPSidebarDefaultWidth = 220.0;
 static CGFloat const kMPSidebarMaxWidth = 400.0;
 
+NSString * const MPSidebarDidSelectFileNotification = @"MPSidebarDidSelectFile";
+
+static NSString *MPSidebarCanonicalPath(NSURL *url)
+{
+    return url.URLByStandardizingPath.URLByResolvingSymlinksInPath.path;
+}
+
 
 #pragma mark - MPFileNode
 
@@ -232,7 +239,10 @@ static CGFloat const kMPSidebarMaxWidth = 400.0;
     self.fileOutlineView.selectionHighlightStyle = NSTableViewSelectionHighlightStyleSourceList;
     self.fileOutlineView.dataSource = self;
     self.fileOutlineView.delegate = self;
-    self.fileOutlineView.doubleAction = @selector(fileDoubleClicked:);
+    // Single click switches to the file, like the Outline tab does for
+    // headings. A double-click's second click lands on the same file in the
+    // window that replaced this one, where it is a no-op.
+    self.fileOutlineView.action = @selector(fileClicked:);
     self.fileOutlineView.target = self;
 
     NSTableColumn *col = [[NSTableColumn alloc] initWithIdentifier:@"name"];
@@ -299,13 +309,19 @@ static CGFloat const kMPSidebarMaxWidth = 400.0;
         [self.outerSplitView.trailingAnchor constraintEqualToAnchor:windowContentView.trailingAnchor],
     ]];
 
-    // Pin tabView inside sidebarView with auto-layout too
+    // Pin tabView inside sidebarView with auto-layout too. The trailing pin
+    // is just below required: when the sidebar collapses to zero width the
+    // tab view's inset content cannot fit, and AppKit would otherwise log a
+    // constraint conflict and break this same constraint to recover.
     self.tabView.translatesAutoresizingMaskIntoConstraints = NO;
+    NSLayoutConstraint *trailing =
+        [self.tabView.trailingAnchor constraintEqualToAnchor:self.sidebarView.trailingAnchor];
+    trailing.priority = NSLayoutPriorityRequired - 1;
     [NSLayoutConstraint activateConstraints:@[
         [self.tabView.topAnchor constraintEqualToAnchor:self.sidebarView.topAnchor],
         [self.tabView.bottomAnchor constraintEqualToAnchor:self.sidebarView.bottomAnchor],
         [self.tabView.leadingAnchor constraintEqualToAnchor:self.sidebarView.leadingAnchor],
-        [self.tabView.trailingAnchor constraintEqualToAnchor:self.sidebarView.trailingAnchor],
+        trailing,
     ]];
 
     // Give the content side a higher holding priority so the sidebar collapses first
@@ -354,6 +370,11 @@ static CGFloat const kMPSidebarMaxWidth = 400.0;
     self.isAnimatingCollapse = NO;
 }
 
+- (NSURL *)rootURL
+{
+    return self.rootFileNode.url;
+}
+
 - (void)setRootURL:(NSURL *)url
 {
     if (!url)
@@ -368,6 +389,77 @@ static CGFloat const kMPSidebarMaxWidth = 400.0;
     }
 }
 
+- (void)selectFileURL:(NSURL *)url
+{
+    NSString *target = MPSidebarCanonicalPath(url);
+    if (!target.length || !self.rootFileNode)
+        return;
+
+    // Walk down from the root, expanding each folder on the way to the file.
+    MPFileNode *found = nil;
+    NSArray<MPFileNode *> *level = self.rootFileNode.children;
+    while (level.count && !found)
+    {
+        MPFileNode *next = nil;
+        for (MPFileNode *node in level)
+        {
+            NSString *path = MPSidebarCanonicalPath(node.url);
+            if ([path isEqualToString:target])
+            {
+                found = node;
+                break;
+            }
+            if (node.isDirectory &&
+                [target hasPrefix:[path stringByAppendingString:@"/"]])
+            {
+                [self.fileOutlineView expandItem:node];
+                next = node;
+                break;
+            }
+        }
+        level = found ? nil : next.children;
+    }
+
+    NSInteger row = found ? [self.fileOutlineView rowForItem:found] : -1;
+    if (row < 0)
+    {
+        [self.fileOutlineView deselectAll:nil];
+        return;
+    }
+    [self.fileOutlineView selectRowIndexes:[NSIndexSet indexSetWithIndex:row]
+                      byExtendingSelection:NO];
+    [self.fileOutlineView scrollRowToVisible:row];
+}
+
+- (void)adoptStateFromSidebar:(MPSidebarController *)other forFileURL:(NSURL *)fileURL
+{
+    if (!other)
+        return;
+
+    NSString *root = MPSidebarCanonicalPath(other.rootURL);
+    NSString *file = MPSidebarCanonicalPath(fileURL);
+    if (root.length && [file hasPrefix:[root stringByAppendingString:@"/"]])
+        [self setRootURL:other.rootURL];
+
+    NSTabViewItem *tab = other.tabView.selectedTabViewItem;
+    if (tab)
+        [self.tabView selectTabViewItemWithIdentifier:tab.identifier];
+
+    CGFloat width = other.sidebarView.frame.size.width;
+    if (!other.sidebarVisible || width <= 0)
+        width = other.savedSidebarWidth;
+    width = MIN(MAX(width, kMPSidebarMinWidth), kMPSidebarMaxWidth);
+
+    // Collapse first (which records the current width), then set the width
+    // to copy so showSidebar opens at exactly that size.
+    [self hideSidebar];
+    self.savedSidebarWidth = width;
+    if (other.sidebarVisible)
+        [self showSidebar];
+
+    [self selectFileURL:fileURL];
+}
+
 - (void)updateHeadingsFromMarkdown:(NSString *)markdown
 {
     self.headingRoots = [MPHeadingNode headingsFromMarkdown:markdown];
@@ -378,20 +470,38 @@ static CGFloat const kMPSidebarMaxWidth = 400.0;
 
 #pragma mark - Actions
 
-- (void)fileDoubleClicked:(id)sender
+// The row an action applies to. For mouse clicks that is clickedRow (-1 for
+// a click on empty space, which must do nothing). Actions sent any other way
+// (accessibility, keyboard) have no clicked row, so use the selection.
+static NSInteger MPActedRow(NSOutlineView *outlineView)
 {
-    MPFileNode *node = [self.fileOutlineView itemAtRow:self.fileOutlineView.clickedRow];
-    if (!node || node.isDirectory)
+    NSInteger row = outlineView.clickedRow;
+    if (row >= 0)
+        return row;
+    NSEventType type = NSApp.currentEvent.type;
+    if (type == NSEventTypeLeftMouseDown || type == NSEventTypeLeftMouseUp)
+        return -1;
+    return outlineView.selectedRow;
+}
+
+- (void)fileClicked:(id)sender
+{
+    NSInteger row = MPActedRow(self.fileOutlineView);
+    if (row < 0)
+        return;
+    MPFileNode *node = [self.fileOutlineView itemAtRow:row];
+    if (!node || node.isDirectory || !node.url)
         return;
 
-    NSDocumentController *dc = [NSDocumentController sharedDocumentController];
-    [dc openDocumentWithContentsOfURL:node.url display:YES
-                    completionHandler:^(NSDocument *doc, BOOL wasOpen, NSError *err) {}];
+    [[NSNotificationCenter defaultCenter]
+        postNotificationName:MPSidebarDidSelectFileNotification
+                      object:self
+                    userInfo:@{@"url": node.url}];
 }
 
 - (void)headingClicked:(id)sender
 {
-    NSInteger row = self.headingOutlineView.clickedRow;
+    NSInteger row = MPActedRow(self.headingOutlineView);
     if (row < 0)
         return;
     MPHeadingNode *heading = [self.headingOutlineView itemAtRow:row];

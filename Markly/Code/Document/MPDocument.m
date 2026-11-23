@@ -486,12 +486,21 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
 
     // Set file browser root to the directory of the opened file
     if (self.fileURL)
+    {
         [self.sidebarController setRootURL:[self.fileURL URLByDeletingLastPathComponent]];
+        [self.sidebarController selectFileURL:self.fileURL];
+    }
 
     // Listen for heading selection from sidebar
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(sidebarDidSelectHeading:)
                                                  name:@"MPSidebarDidSelectHeading"
+                                               object:self.sidebarController];
+
+    // Listen for file selection from sidebar
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(sidebarDidSelectFile:)
+                                                 name:MPSidebarDidSelectFileNotification
                                                object:self.sidebarController];
 
     // These needs to be queued until after the window is shown, so that editor
@@ -1770,6 +1779,84 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
             "})()",
             [title stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]];
         [self.preview stringByEvaluatingJavaScriptFromString:js];
+    }
+}
+
+- (void)sidebarDidSelectFile:(NSNotification *)notification
+{
+    [self switchToDocumentAtURL:notification.userInfo[@"url"]];
+}
+
+// Show another file in this window's place: the new document's window takes
+// this window's frame, tab position and sidebar state, and this document is
+// closed if it has no unsaved changes. Documents that are already open are
+// just brought forward.
+- (void)switchToDocumentAtURL:(NSURL *)url
+{
+    if (!url)
+        return;
+
+    NSString *(^canonical)(NSURL *) = ^NSString *(NSURL *u) {
+        return u.URLByStandardizingPath.URLByResolvingSymlinksInPath.path;
+    };
+    if (self.fileURL && [canonical(url) isEqualToString:canonical(self.fileURL)])
+        return;
+
+    NSDocumentController *controller = [NSDocumentController sharedDocumentController];
+    for (NSDocument *document in controller.documents)
+    {
+        if (document.fileURL && [canonical(document.fileURL) isEqualToString:canonical(url)])
+        {
+            [document showWindows];
+            return;
+        }
+    }
+
+    NSError *error = nil;
+    NSString *type = [controller typeForContentsOfURL:url error:&error];
+    NSDocument *document = type ? [controller makeDocumentWithContentsOfURL:url
+                                                                     ofType:type
+                                                                      error:&error]
+                                : nil;
+    if (!document)
+    {
+        if (error)
+            [self presentError:error];
+        return;
+    }
+
+    [controller addDocument:document];
+    [document makeWindowControllers];
+
+    NSWindow *oldWindow = self.windowControllers.firstObject.window;
+    NSWindow *newWindow = document.windowControllers.firstObject.window;
+    if (oldWindow && newWindow)
+    {
+        [newWindow setFrame:oldWindow.frame display:NO];
+        [newWindow layoutIfNeeded];
+        if ([document isKindOfClass:[MPDocument class]])
+        {
+            [((MPDocument *)document).sidebarController
+                adoptStateFromSidebar:self.sidebarController forFileURL:url];
+        }
+        // Keep the window's place in a native tab group.
+        if (oldWindow.tabbedWindows.count > 1)
+            [oldWindow addTabbedWindow:newWindow ordered:NSWindowAbove];
+    }
+
+    [document showWindows];
+    [controller noteNewRecentDocument:document];
+
+    // Close after the click that got us here has finished unwinding through
+    // this window's views. Never close a document with unsaved changes.
+    if (!self.isDocumentEdited)
+    {
+        __weak MPDocument *weakSelf = self;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            MPDocument *strongSelf = weakSelf;
+            if (strongSelf && !strongSelf.isDocumentEdited)
+                [strongSelf close];
+        });
     }
 }
 
