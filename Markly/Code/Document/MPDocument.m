@@ -426,6 +426,8 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
                  object:self.editor.enclosingScrollView.contentView];
     [center addObserver:self selector:@selector(editorFrameDidChange:)
                    name:NSViewFrameDidChangeNotification object:self.editor];
+    [center addObserver:self selector:@selector(previewFrameDidChange:)
+                   name:NSViewFrameDidChangeNotification object:self.preview];
     [center addObserver:self selector:@selector(didRequestEditorReload:)
                    name:MPDidRequestEditorSetupNotification object:nil];
     [center addObserver:self selector:@selector(didRequestPreviewReload:)
@@ -992,6 +994,9 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
 
 - (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame
 {
+    if (frame == sender.mainFrame)
+        [self fitPreviewPageToPreview];
+
     // If MathJax is on, the on-completion callback will be invoked by the
     // JavaScript handler injected in -webView:didCommitLoadForFrame:.
     if (!self.preferences.htmlMathJax)
@@ -1315,6 +1320,25 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
 {
     if (self.preferences.editorWidthLimited)
         [self adjustEditorInsets];
+}
+
+- (void)previewFrameDidChange:(NSNotification *)notification
+{
+    [self fitPreviewPageToPreview];
+}
+
+// The preview's page view (its main WebFrameView) must always fill the
+// WebView. It follows the WebView by autoresizing, which only applies size
+// deltas: while a window is being built AppKit can briefly lay the views out
+// at degenerate sizes (zero or negative widths), the page view's size gets
+// clamped, and from then on it stays too wide or too narrow. Snap it back
+// whenever the WebView changes size.
+- (void)fitPreviewPageToPreview
+{
+    NSView *page = self.preview.mainFrame.frameView;
+    NSRect bounds = self.preview.bounds;
+    if (page && !NSEqualRects(page.frame, bounds))
+        page.frame = bounds;
 }
 
 - (void)willStartLiveScroll:(NSNotification *)notification

@@ -9,6 +9,7 @@
 #import <XCTest/XCTest.h>
 #import "MPSidebarController.h"
 #import "MPDocument.h"
+#import <WebKit/WebKit.h>
 
 
 // Private parts of the classes under test.
@@ -397,6 +398,46 @@ static NSString *MPCanonicalPath(NSURL *url)
 
     XCTAssertEqualObjects(title, @"Section B");
     XCTAssertEqual([self documentsNamed:@"alpha.md"].count, 1u);
+}
+
+#pragma mark Preview layout after switching
+
+// The preview's page (WebFrameView) must fill the WebView after a switch.
+// It used to drift: while a new window is built, AppKit briefly lays its
+// views out at degenerate sizes, and the page view's autoresizing lost the
+// difference, leaving the page too narrow (white column with gaps) or too
+// wide (text running off the right edge). Intermittent, so switch a few
+// times in a large window.
+- (void)testPreviewFillsItsPaneAfterRepeatedSwitches
+{
+    MPDocument *current = [self openDocumentNamed:@"alpha.md"];
+    NSWindow *window = current.windowControllers.firstObject.window;
+    [window setFrame:window.screen.visibleFrame display:YES];
+    MPSpin(1.0);
+
+    NSArray *sequence = @[@"beta.md", @"gamma.md", @"alpha.md",
+                          @"beta.md", @"gamma.md", @"alpha.md"];
+    for (NSString *name in sequence)
+    {
+        NSOutlineView *files = current.sidebarController.fileOutlineView;
+        XCTAssertTrue(MPClickRow(files, MPRowNamed(files, name), 1));
+        XCTAssertTrue(MPSpinUntil(5, ^BOOL{
+            return [self documentsNamed:name].count == 1;
+        }));
+        MPDocument *next = (MPDocument *)[self documentsNamed:name].firstObject;
+        MPSpin(1.5);  // let the queued setup, render and split restore finish
+
+        WebView *preview = [next valueForKey:@"preview"];
+        NSView *page = preview.mainFrame.frameView;
+        XCTAssertTrue(NSEqualRects(page.frame, preview.bounds),
+                      @"%@: page %@ should fill preview %@", name,
+                      NSStringFromRect(page.frame), NSStringFromRect(preview.bounds));
+        NSString *width = [preview stringByEvaluatingJavaScriptFromString:
+                           @"String(window.innerWidth)"];
+        XCTAssertEqualWithAccuracy(width.doubleValue, NSWidth(preview.bounds), 1.0,
+                                   @"%@: page lays out at the wrong width", name);
+        current = next;
+    }
 }
 
 @end
