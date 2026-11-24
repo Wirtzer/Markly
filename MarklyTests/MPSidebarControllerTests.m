@@ -400,6 +400,94 @@ static NSString *MPCanonicalPath(NSURL *url)
     XCTAssertEqual([self documentsNamed:@"alpha.md"].count, 1u);
 }
 
+#pragma mark External document changes
+
+- (void)testExternalAtomicWriteRefreshesOpenDocumentAndPreview
+{
+    MPDocument *doc = [self openDocumentNamed:@"alpha.md"];
+    [doc showPreviewOnly:nil];
+    NSWindow *window = doc.windowControllers.firstObject.window;
+    WebView *preview = [doc valueForKey:@"preview"];
+    NSString *replacement = @"# Updated externally\n\n## Fresh outline\n\nNew body.\n";
+    NSError *error = nil;
+    XCTAssertTrue([replacement writeToURL:doc.fileURL atomically:YES
+                                 encoding:NSUTF8StringEncoding error:&error], @"%@", error);
+    XCTAssertTrue(MPSpinUntil(4, ^BOOL{
+        NSString *body = [preview stringByEvaluatingJavaScriptFromString:@"document.body.innerText"];
+        return [doc.markdown isEqualToString:replacement] &&
+               [body containsString:@"New body."];
+    }), @"the existing document and preview should show the disk contents");
+    XCTAssertEqual(doc.windowControllers.firstObject.window, window);
+    XCTAssertFalse(doc.isDocumentEdited);
+    XCTAssertGreaterThanOrEqual(MPRowNamed(doc.sidebarController.headingOutlineView,
+                                           @"Fresh outline"), 0);
+}
+
+- (void)testRefreshToolbarButtonReloadsInPlaceImmediately
+{
+    MPDocument *doc = [self openDocumentNamed:@"alpha.md"];
+    NSToolbar *toolbar = doc.windowControllers.firstObject.window.toolbar;
+    NSToolbarItem *refresh = nil;
+    for (NSToolbarItem *item in toolbar.items)
+    {
+        if ([item.itemIdentifier isEqualToString:@"refresh-document"])
+            refresh = item;
+    }
+    XCTAssertNotNil(refresh, @"Refresh should be in the default toolbar");
+    XCTAssertNotNil(refresh.image);
+    if (!refresh)
+        return;
+
+    NSString *replacement = @"# Updated in place\n";
+    NSError *error = nil;
+    XCTAssertTrue([replacement writeToURL:doc.fileURL atomically:NO
+                                 encoding:NSUTF8StringEncoding error:&error], @"%@", error);
+    XCTAssertTrue([NSApp sendAction:refresh.action to:refresh.target from:refresh]);
+    XCTAssertEqualObjects(doc.markdown, replacement,
+                          @"the toolbar action should reload without waiting for the timer");
+    XCTAssertFalse(doc.isDocumentEdited);
+
+    NSString *nextRevision = @"# In-place write\n";
+    XCTAssertTrue([nextRevision writeToURL:doc.fileURL atomically:NO
+                                  encoding:NSUTF8StringEncoding error:&error], @"%@", error);
+    XCTAssertTrue(MPSpinUntil(4, ^BOOL{
+        return [doc.markdown isEqualToString:nextRevision];
+    }), @"an in-place edit should also be detected automatically");
+}
+
+- (void)testExternalWriteAndRefreshButtonPreserveUnsavedEdits
+{
+    MPDocument *doc = [self openDocumentNamed:@"alpha.md"];
+    doc.markdown = @"# Unsaved Markly edits\n";
+    [doc updateChangeCount:NSChangeDone];
+    XCTAssertTrue(doc.isDocumentEdited);
+
+    NSString *replacement = @"# A different disk revision\n";
+    NSError *error = nil;
+    XCTAssertTrue([replacement writeToURL:doc.fileURL atomically:YES
+                                 encoding:NSUTF8StringEncoding error:&error], @"%@", error);
+    MPSpin(1.5);
+    XCTAssertEqualObjects(doc.markdown, @"# Unsaved Markly edits\n");
+    XCTAssertTrue(doc.isDocumentEdited);
+
+    NSWindow *window = doc.windowControllers.firstObject.window;
+    for (NSToolbarItem *item in window.toolbar.items)
+    {
+        if ([item.itemIdentifier isEqualToString:@"refresh-document"])
+        {
+            XCTAssertTrue([NSApp sendAction:item.action to:item.target from:item]);
+            break;
+        }
+    }
+    XCTAssertNotNil(window.attachedSheet, @"Refresh should explain that the document has unsaved edits");
+    if (window.attachedSheet)
+        [window endSheet:window.attachedSheet returnCode:NSModalResponseOK];
+    XCTAssertEqualObjects(doc.markdown, @"# Unsaved Markly edits\n");
+    XCTAssertEqualObjects([NSString stringWithContentsOfURL:doc.fileURL
+                                                  encoding:NSUTF8StringEncoding error:&error],
+                          replacement);
+}
+
 #pragma mark Preview layout after switching
 
 // The preview's page (WebFrameView) must fill the WebView after a switch.

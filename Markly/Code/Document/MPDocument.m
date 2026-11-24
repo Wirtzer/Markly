@@ -7,6 +7,7 @@
 //
 
 #import "MPDocument.h"
+#import <sys/stat.h>
 #import <sys/xattr.h>
 #import <WebKit/WebKit.h>
 #import <JJPluralForm/JJPluralForm.h>
@@ -38,6 +39,21 @@
 #import <JavaScriptCore/JavaScriptCore.h>
 
 static NSString * const kMPDefaultAutosaveName = @"Untitled";
+
+static BOOL MPFileRevisionAtURL(NSURL *url, struct stat *revision)
+{
+    return url.isFileURL && stat(url.fileSystemRepresentation, revision) == 0 &&
+           S_ISREG(revision->st_mode);
+}
+
+static BOOL MPFileRevisionsMatch(struct stat a, struct stat b)
+{
+    return a.st_dev == b.st_dev && a.st_ino == b.st_ino && a.st_size == b.st_size &&
+           a.st_mtimespec.tv_sec == b.st_mtimespec.tv_sec &&
+           a.st_mtimespec.tv_nsec == b.st_mtimespec.tv_nsec &&
+           a.st_ctimespec.tv_sec == b.st_ctimespec.tv_sec &&
+           a.st_ctimespec.tv_nsec == b.st_ctimespec.tv_nsec;
+}
 
 
 NS_INLINE NSString *MPEditorPreferenceKeyWithValueKey(NSString *key)
@@ -225,6 +241,9 @@ typedef NS_ENUM(NSUInteger, MPWordCountType) {
 
 // Store file content in initializer until nib is loaded.
 @property (copy) NSString *loadedString;
+@property (strong) NSTimer *diskRefreshTimer;
+@property (copy) NSURL *observedFileURL;
+@property (nonatomic) struct stat observedFileRevision;
 
 - (void)scaleWebview;
 - (void)syncScrollers;
@@ -512,6 +531,7 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
         [self setupEditor:nil];
         [self redrawDivider];
         [self reloadFromLoadedString];
+        [self startDiskRefreshTimer];
 
         // Apply view mode: per-file memory > opened-file preference > default
         NSInteger viewMode = -1;
@@ -565,8 +585,86 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
     }
 }
 
+- (void)startDiskRefreshTimer
+{
+    if (self.diskRefreshTimer || !self.renderer)
+        return;
+
+    // Uncoordinated writers can replace the file at its path without notifying
+    // NSDocument's file presenter. Check metadata before reading any contents.
+    __weak MPDocument *weakSelf = self;
+    self.diskRefreshTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 repeats:YES block:^(NSTimer *timer) {
+        [weakSelf refreshFromDiskInteractively:NO];
+    }];
+    self.diskRefreshTimer.tolerance = 0.2;
+}
+
+- (IBAction)refreshDocumentFromDisk:(id)sender
+{
+    [self refreshFromDiskInteractively:YES];
+}
+
+- (void)refreshFromDiskInteractively:(BOOL)interactive
+{
+    NSURL *url = self.fileURL;
+    if (!url.isFileURL || !self.renderer)
+        return;
+    if (self.isDocumentEdited || self.hasUnautosavedChanges || [self.editor hasMarkedText])
+    {
+        if (interactive && self.windowForSheet && !self.windowForSheet.attachedSheet)
+        {
+            NSAlert *alert = [[NSAlert alloc] init];
+            alert.messageText = NSLocalizedString(@"This document has unsaved changes.", @"Refresh document with edits");
+            alert.informativeText = NSLocalizedString(@"Save or undo your changes before refreshing from disk.", @"Safe refresh instructions");
+            [alert beginSheetModalForWindow:self.windowForSheet completionHandler:nil];
+        }
+        return;
+    }
+
+    struct stat revision;
+    if (!MPFileRevisionAtURL(url, &revision))
+    {
+        if (interactive)
+            [self presentError:[NSError errorWithDomain:NSCocoaErrorDomain
+                                                   code:NSFileReadUnknownError
+                                               userInfo:@{NSURLErrorKey: url}]];
+        return;
+    }
+    if (!interactive && [url isEqual:self.observedFileURL] &&
+        MPFileRevisionsMatch(revision, self.observedFileRevision))
+        return;
+
+    NSError *error = nil;
+    NSString *diskContent = [NSString stringWithContentsOfURL:url encoding:NSUTF8StringEncoding error:&error];
+    if (diskContent)
+    {
+        if ([diskContent isEqualToString:self.markdown])
+        {
+            // A metadata change or Markly's own save should preserve Undo.
+            self.observedFileURL = url;
+            self.observedFileRevision = revision;
+            return;
+        }
+
+        NSRange selection = self.editor.selectedRange;
+        if ([self revertToContentsOfURL:url ofType:self.fileType error:&error])
+        {
+            NSUInteger length = self.markdown.length;
+            NSUInteger start = MIN(selection.location, length);
+            self.editor.selectedRange = NSMakeRange(start, MIN(selection.length, length - start));
+            return;
+        }
+    }
+
+    if (interactive && error)
+        [self presentError:error];
+}
+
 - (void)close
 {
+    [self.diskRefreshTimer invalidate];
+    self.diskRefreshTimer = nil;
+
     if (self.needsToUnregister) 
     {
         // Close can be called multiple times, but this can only be done once.
@@ -647,7 +745,15 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
         const char *path = url.fileSystemRepresentation;
         removexattr(path, "com.apple.quarantine", 0);
     }
-    return [super readFromURL:url ofType:typeName error:outError];
+    struct stat revision;
+    BOOL hasRevision = MPFileRevisionAtURL(url, &revision);
+    BOOL success = [super readFromURL:url ofType:typeName error:outError];
+    if (success && hasRevision)
+    {
+        self.observedFileURL = url;
+        self.observedFileRevision = revision;
+    }
+    return success;
 }
 
 - (BOOL)readFromData:(NSData *)data ofType:(NSString *)typeName
@@ -656,7 +762,13 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
     NSString *content = [[NSString alloc] initWithData:data
                                               encoding:NSUTF8StringEncoding];
     if (!content)
+    {
+        if (outError)
+            *outError = [NSError errorWithDomain:NSCocoaErrorDomain
+                                             code:NSFileReadInapplicableStringEncodingError
+                                         userInfo:nil];
         return NO;
+    }
 
     self.loadedString = content;
     [self reloadFromLoadedString];
@@ -761,8 +873,10 @@ static void (^MPGetPreviewLoadingCompletionHandler(MPDocument *doc))()
 
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item
 {
-    BOOL result = [super validateUserInterfaceItem:item];
     SEL action = item.action;
+    if (action == @selector(refreshDocumentFromDisk:))
+        return self.fileURL.isFileURL;
+    BOOL result = [super validateUserInterfaceItem:item];
     if (action == @selector(toggleToolbar:))
     {
         NSMenuItem *it = ((NSMenuItem *)item);

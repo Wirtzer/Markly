@@ -47,9 +47,16 @@ static CGFloat itemWidth = 37;
 
 - (void)setupToolbarItems
 {
-    // Set up all available toolbar items — sidebar + view mode toggle first
+    NSToolbarItem *refresh = [[NSToolbarItem alloc] initWithItemIdentifier:@"refresh-document"];
+    refresh.label = NSLocalizedString(@"Refresh", @"Refresh document toolbar button");
+    refresh.paletteLabel = refresh.label;
+    refresh.toolTip = NSLocalizedString(@"Refresh document from disk", @"Refresh toolbar tooltip");
+    refresh.image = [NSImage imageNamed:NSImageNameRefreshTemplate];
+    refresh.action = @selector(refreshDocumentFromDisk:);
+
     self->toolbarItems = @[
         [self toolbarItemWithIdentifier:@"toggle-sidebar" label:NSLocalizedString(@"Sidebar", @"Toggle sidebar toolbar button") icon:@"NSLeftFacingTriangleTemplate" action:@selector(toggleDocumentSidebar:)],
+        refresh,
         [self toolbarItemGroupWithIdentifier:@"view-mode-group" separated:NO label:NSLocalizedString(@"View Mode", @"") items:@[
             [self toolbarItemWithIdentifier:@"view-editor" label:NSLocalizedString(@"Editor Only", @"Editor only toolbar button") icon:@"ToolbarIconShiftLeft" action:@selector(showEditorOnly:)],
             [self toolbarItemWithIdentifier:@"view-both" label:NSLocalizedString(@"Editor & Preview", @"Both panes toolbar button") icon:@"ToolbarIconEditorAndPreview" action:@selector(showBothPanes:)],
@@ -133,7 +140,7 @@ static CGFloat itemWidth = 37;
     NSMutableArray *defaultItemIdentifiers = [NSMutableArray new];
     
     // Add space after the specified toolbar item indices
-    int flexibleSpaceAfterIndices[] = {1, 4, 5, 7, 9};
+    int flexibleSpaceAfterIndices[] = {2, 5, 6, 8, 10};
     int flexibleSpaceCount = sizeof(flexibleSpaceAfterIndices) / sizeof(flexibleSpaceAfterIndices[0]);
     int i = 0;
     int k = 0;
@@ -178,6 +185,8 @@ static CGFloat itemWidth = 37;
     for (NSToolbarItem *currentItem in self->toolbarItems) {
         if ([currentItem.itemIdentifier isEqualToString:itemIdentifier]) {
             item = currentItem;
+            if ([itemIdentifier isEqualToString:@"refresh-document"])
+                item.target = self.document;
             break;
         }
     }

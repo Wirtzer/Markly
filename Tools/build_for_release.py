@@ -7,6 +7,8 @@ import argparse
 import os
 import re
 import shutil
+import subprocess
+import tempfile
 import zipfile
 
 from xml.etree import ElementTree
@@ -54,13 +56,50 @@ def archive_dir(zip_f, directory):
 
 def parse_args(argv):
     parser = argparse.ArgumentParser()
-    parser.add_argument('path_to_pem', help='path to .pem private key')
-    return parser.parse_args(argv)
+    parser.add_argument('path_to_pem', nargs='?', help='path to .pem private key')
+    parser.add_argument('--test-only', action='store_true',
+                        help='run the same test gate used before archiving')
+    args = parser.parse_args(argv)
+    if not args.test_only and not args.path_to_pem:
+        parser.error('path_to_pem is required when building a release')
+    return args
+
+
+def prepare_build_inputs():
+    subprocess.check_call(['make', '-C', 'Dependency/peg-markdown-highlight'])
+    prism_source = os.path.join(ROOT_DIR, 'Dependency', 'prism')
+    prism_resource = os.path.join(ROOT_DIR, 'Markly', 'Resources', 'Prism')
+    if not os.path.isfile(os.path.join(prism_source, 'components.js')):
+        raise RuntimeError('Initialize the pinned Prism submodule before building Markly.')
+    if os.path.exists(prism_resource):
+        shutil.rmtree(prism_resource)
+    os.mkdir(prism_resource)
+    for name in ('components', 'themes', 'plugins'):
+        shutil.copytree(os.path.join(prism_source, name), os.path.join(prism_resource, name))
+    shutil.copy2(os.path.join(prism_source, 'components.js'), prism_resource)
+
+
+def test_before_archive():
+    derived_data = tempfile.mkdtemp(prefix='markly-release-tests-')
+    try:
+        subprocess.check_call([
+            XCODEBUILD, '-workspace', 'Markly.xcworkspace', '-scheme', 'Markly',
+            '-configuration', 'Debug', '-destination', 'platform=macOS',
+            '-derivedDataPath', derived_data, '-parallel-testing-enabled', 'NO',
+            'CODE_SIGN_IDENTITY=-', 'CODE_SIGNING_REQUIRED=YES', 'test',
+        ])
+    finally:
+        shutil.rmtree(derived_data)
 
 
 def main(argv):
     options = parse_args(argv)
     cert_path = options.path_to_pem
+    os.chdir(ROOT_DIR)
+    prepare_build_inputs()
+    test_before_archive()
+    if options.test_only:
+        return
 
     print('Pre-build cleaning...')
     if os.path.exists(BUILD_DIR):
@@ -74,10 +113,6 @@ def main(argv):
         XCODEBUILD, 'clean', '-workspace', 'Markly.xcworkspace',
         '-scheme', 'Markly',
     )
-
-    print('Running external scripts...')
-    os.chdir(os.path.join(ROOT_DIR, 'Dependency', 'peg-markdown-highlight'))
-    execute('make')
 
     print('Building application archive...')
     os.chdir(BUILD_DIR)
